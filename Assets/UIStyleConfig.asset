@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 341bd61c05bdc134d9333a318414c24f, type: 3}
+  m_Name: UIStyleConfig
+  m_EditorClassIdentifier: 
+  panelBg: {r: 0.18, g: 0.14, b: 0.16, a: 1}
+  panelBgLight: {r: 0.26, g: 0.21, b: 0.23, a: 1}
+  panelBgMid: {r: 0.41, g: 0.35, b: 0.37, a: 1}
+  btnConfirm: {r: 0.28, g: 0.5, b: 0.3, a: 1}
+  btnDanger: {r: 0.58, g: 0.25, b: 0.29, a: 1}
+  btnNeutral: {r: 0.42, g: 0.44, b: 0.28, a: 1}
+  btnSecondary: {r: 0.41, g: 0.35, b: 0.37, a: 1}
+  btnBossPreview: {r: 0.55, g: 0.32, b: 0.13, a: 1}
+  btnWidthWide: 220
+  btnHeightTall: 60
+  btnWidthStd: 160
+  btnHeightStd: 50
+  btnWidthAction: 140
+  btnHeightAction: 55
+  cellTW: {r: 0.937, g: 0.627, b: 0.314, a: 1}
+  cellDW: {r: 0.97, g: 0.76, b: 0.78, a: 1}
+  cellTL: {r: 0.6, g: 0.78, b: 0.62, a: 1}
+  cellDL: {r: 0.851, g: 0.859, b: 0.737, a: 1}
+  tileEmpty: {r: 0.87, g: 0.867, b: 0.839, a: 1}
+  tileOccupied: {r: 0.851, g: 0.604, b: 0.278, a: 1}
+  tileTurnValid: {r: 0.58, g: 0.761, b: 0.878, a: 1}
+  tileInvalid: {r: 0.937, g: 0.584, b: 0.616, a: 1}
+  hudGold: {r: 1, g: 0.88, b: 0.251, a: 1}
+  hudLives: {r: 0.937, g: 0.4, b: 0.435, a: 1}
+  hudScore: {r: 0.93, g: 0.918, b: 0.886, a: 1}
+  hudBossWarning: {r: 0.937, g: 0.627, b: 0.314, a: 1}
+  lexiconLabel: {r: 0.784, g: 0.698, b: 0.902, a: 1}
+  shopAffordable: {r: 0.412, g: 0.345, b: 0.373, a: 1}
+  shopCantAfford: {r: 0.18, g: 0.141, b: 0.165, a: 1}
+  shopLexiconFull: {r: 0.294, g: 0.243, b: 0.165, a: 1}

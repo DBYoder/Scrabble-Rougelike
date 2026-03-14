@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 533e53fa181defc418d76d6522159def, type: 3}
+  m_Name: Ante4_Blind2
+  m_EditorClassIdentifier: 
+  ante: 4
+  blind: 2
+  targetScore: 3600
+  goldReward: 8
+  bossModifier: 4
+  modifierDescription: 'Boss: Each redraw costs 2 charges.'
+  blindDescription: Boss Blind.
