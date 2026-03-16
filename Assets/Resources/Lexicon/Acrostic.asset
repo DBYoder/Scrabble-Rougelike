@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86a4b7912a726fc489660067eb4f8958, type: 3}
-  m_Name: Polysyllabic
+  m_Name: Acrostic
   m_EditorClassIdentifier: 
-  displayName: Polysyllabic
-  flavorText: The longer the word, the more it commands.
-  effectDescription: "5+ letters: +0.5\xD7\n7+ letters: +1.0\xD7\n10+ letters: +2.0\xD7"
+  displayName: Acrostic
+  flavorText: The margins hold power.
+  effectDescription: Words starting or ending at the grid edge score +25 chips.
   artwork: {fileID: 0}
-  effectType: 10
+  effectType: 17
   effectValue: 0
   shopCost: 6

@@ -10,22 +10,9 @@ public class RunUI : MonoBehaviour
     public static RunUI Instance { get; private set; }
 
     [Header("HUD Labels")]
-    public Text anteText;
-    public Text blindText;
     public Text livesText;
-    public Text goldText;
-    public Text scoreText;
-    public Text targetText;
-    public Text redrawsText;
-    public Text bossModifierText;  // Shows boss modifier description when on Boss Blind
+    public Text anteText;           // "Ante 2/8  ·  Blind 3/3"
     public Text featuredLetterText; // Shows featured letter when The Glossary is active
-
-    [Header("Game Panel Info Labels (left sidebar inside GamePanel)")]
-    public Text gameBlindLabel;
-    public Text gameAnteLabel;
-    public Text gameLivesLabel;
-    public Text gameScoreLabel;
-    public Text gameFeaturedLetterLabel;
 
     [Header("Lexicon Display")]
     public Transform  lexiconBarParent;      // GamePanel sidebar (VLG, right side)
@@ -33,8 +20,6 @@ public class RunUI : MonoBehaviour
     public GameObject lexiconCardPrefab;
 
     private readonly Dictionary<LexiconEffectType, List<Image>> _lexiconImages = new Dictionary<LexiconEffectType, List<Image>>();
-
-    private static readonly string[] BlindNames = { "Small Blind", "Big Blind", "Boss Blind" };
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
     private void Awake()
@@ -49,23 +34,9 @@ public class RunUI : MonoBehaviour
         if (RunManager.Instance == null) return;
         var rm = RunManager.Instance;
 
-        Set(anteText,    $"Ante {rm.currentAnte} / {RunManager.MaxAntes}");
-        Set(blindText,   rm.currentBlind < BlindNames.Length ? BlindNames[rm.currentBlind] : "???");
-        Set(livesText,   $"♥ {rm.lives}");
-        Set(goldText,    $"$ {rm.gold}");
-        Set(scoreText,   $"Score: {rm.score}");
-        Set(targetText,  $"Target: {rm.GetCurrentBlindTarget()}");
-
-        if (TileHandManager.Instance != null)
-            Set(redrawsText, $"Redraws: {TileHandManager.Instance.redrawsRemaining}");
-
-        if (bossModifierText != null)
-        {
-            bool showBoss = rm.IsBossBlind && rm.GetBossModifier() != BossModifier.None;
-            bossModifierText.gameObject.SetActive(showBoss);
-            if (showBoss)
-                bossModifierText.text = rm.GetBossModifierDescription();
-        }
+        // Ante + blind-within-ante progress ("Ante 2/8  ·  Blind 3/3")
+        Set(livesText, $"♥ {rm.lives}");
+        Set(anteText,  $"Ante {rm.currentAnte} / {RunManager.MaxAntes}  ·  Blind {rm.currentBlind + 1} / 3");
 
         if (featuredLetterText != null)
         {
@@ -75,20 +46,6 @@ public class RunUI : MonoBehaviour
                 featuredLetterText.text = $"★ {char.ToUpper(rm.featuredLetter)}";
         }
 
-        // ── Game Panel info sidebar (mirrors scoring screen overlay) ──────────
-        string blindName = rm.currentBlind < BlindNames.Length ? BlindNames[rm.currentBlind] : "???";
-        Set(gameBlindLabel,  blindName);
-        Set(gameAnteLabel,   $"Ante {rm.currentAnte} / {RunManager.MaxAntes}");
-        Set(gameLivesLabel,  $"♥  {rm.lives}");
-        Set(gameScoreLabel,  $"{rm.score}  /  {rm.GetCurrentBlindTarget()}");
-
-        if (gameFeaturedLetterLabel != null)
-        {
-            bool hasGlossary2 = rm.activeLexicon.Exists(l => l.effectType == LexiconEffectType.TheGlossary);
-            gameFeaturedLetterLabel.gameObject.SetActive(hasGlossary2);
-            if (hasGlossary2)
-                gameFeaturedLetterLabel.text = $"★  {char.ToUpper(rm.featuredLetter)}";
-        }
     }
 
     public void RefreshLexiconBar()

@@ -38,8 +38,75 @@ public static class SceneBuilder
         var shopItemPrefab      = BuildShopItemPrefab();
         var lexiconCardPrefab   = BuildLexiconCardPrefab();
         var upgradeOptionPrefab = BuildUpgradeOptionPrefab();
+        var wordTilePrefab      = BuildWordTilePrefab();
+        var wordRowPrefab       = BuildWordRowPrefab();
 
-        // Part B — Scene
+        BuildScene(cellPrefab, tileCardPrefab, shopItemPrefab,
+                   lexiconCardPrefab, upgradeOptionPrefab,
+                   wordTilePrefab, wordRowPrefab);
+    }
+
+    // ── Wire Scene Only ───────────────────────────────────────────────────────
+    // Rebuilds the scene and wires all references using the prefabs currently on
+    // disk — your manual prefab edits are preserved.  Use this instead of
+    // "Build Scene & Prefabs" whenever you only need to re-wire after adding a
+    // new panel, manager, or UI element.
+    [MenuItem("Crossword/Wire Scene Only")]
+    public static void WireSceneOnly()
+    {
+        _style = AssetDatabase.LoadAssetAtPath<UIStyleConfig>(StyleCfgPath);
+        if (_style == null)
+            Debug.LogWarning($"[SceneBuilder] UIStyleConfig not found at {StyleCfgPath}. " +
+                             "Create it via Assets > Create > Crossword > UI Style Config.");
+
+        EnsureDirectories();
+
+        // Load each prefab from disk; fall back to building it if missing.
+        var cellPrefab          = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/GridCell.prefab")      ?? BuildGridCellPrefab();
+        var tileCardPrefab      = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/TileCard.prefab")      ?? BuildTileCardPrefab();
+        var shopItemPrefab      = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/ShopItem.prefab")      ?? BuildShopItemPrefab();
+        var lexiconCardPrefab   = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/LexiconCard.prefab")   ?? BuildLexiconCardPrefab();
+        var upgradeOptionPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/UpgradeOption.prefab") ?? BuildUpgradeOptionPrefab();
+        var wordTilePrefab      = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/WordTile.prefab")      ?? BuildWordTilePrefab();
+        var wordRowPrefab       = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/WordRow.prefab")       ?? BuildWordRowPrefab();
+
+        BuildScene(cellPrefab, tileCardPrefab, shopItemPrefab,
+                   lexiconCardPrefab, upgradeOptionPrefab,
+                   wordTilePrefab, wordRowPrefab);
+    }
+
+    // ── Create Missing Prefabs ────────────────────────────────────────────────
+    // Creates only the prefabs that do not already exist on disk.
+    // Safe to run after editing prefabs in the Unity editor — skips any that are
+    // already present so your changes are not overwritten.
+    [MenuItem("Crossword/Create Missing Prefabs")]
+    public static void CreateMissingPrefabs()
+    {
+        _style = AssetDatabase.LoadAssetAtPath<UIStyleConfig>(StyleCfgPath);
+        EnsureDirectories();
+        if (!PrefabExists("GridCell"))      BuildGridCellPrefab();
+        if (!PrefabExists("TileCard"))      BuildTileCardPrefab();
+        if (!PrefabExists("ShopItem"))      BuildShopItemPrefab();
+        if (!PrefabExists("LexiconCard"))   BuildLexiconCardPrefab();
+        if (!PrefabExists("UpgradeOption")) BuildUpgradeOptionPrefab();
+        if (!PrefabExists("WordTile"))      BuildWordTilePrefab();
+        if (!PrefabExists("WordRow"))       BuildWordRowPrefab();
+        AssetDatabase.Refresh();
+        Debug.Log("[SceneBuilder] Create Missing Prefabs done.");
+    }
+
+    private static bool PrefabExists(string name) =>
+        AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/{name}.prefab") != null;
+
+    // ── Build Scene ───────────────────────────────────────────────────────────
+    // Shared by BuildAll() and WireSceneOnly(). Prefab assets are passed in as
+    // parameters so WireSceneOnly() can supply the on-disk prefabs unchanged.
+    private static void BuildScene(
+        GameObject cellPrefab,          GameObject tileCardPrefab,
+        GameObject shopItemPrefab,      GameObject lexiconCardPrefab,
+        GameObject upgradeOptionPrefab, GameObject wordTilePrefab,
+        GameObject wordRowPrefab)
+    {
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
         // Main Camera
@@ -73,31 +140,27 @@ public static class SceneBuilder
         var runUI  = hudGo.AddComponent<RunUI>();
         StretchFull(hudGo.GetComponent<RectTransform>());
 
-        // TopBar — 50px strip at top
+        // TopBar — 50px strip at top. Shows only: lives, ante progress, featured letter.
         var topBar = CreateStrip(hudGo.transform, "TopBar", isTop: true, thickness: 50f);
-        AddHLG(topBar, 8, TextAnchor.MiddleLeft);
-        var anteText          = AddLabel(topBar.transform, "AnteText",          "Ante 1/8");
-        var blindText         = AddLabel(topBar.transform, "BlindText",         "Small Blind");
-        var livesText         = AddLabel(topBar.transform, "LivesText",         "♥ 3");
-        var goldText          = AddLabel(topBar.transform, "GoldText",          "$ 0");
-        var scoreText         = AddLabel(topBar.transform, "ScoreText",         "Score: 0");
-        var targetText        = AddLabel(topBar.transform, "TargetText",        "Target: 100");
-        var redrawsText       = AddLabel(topBar.transform, "RedrawsText",       "Redraws: 3");
-        var bossModText       = AddLabel(topBar.transform, "BossModText",       "");
-        var featuredLetterTxt = AddLabel(topBar.transform, "FeaturedLetterText","", fontSize: 24, bold: true);
+        AddHLG(topBar, 16, TextAnchor.MiddleLeft);
+        var livesText         = AddLabel(topBar.transform, "LivesText",          "♥ 3", fontSize: 20, bold: true);
+        livesText.color = new Color(0.95f, 0.55f, 0.60f); // rose
+        var anteText          = AddLabel(topBar.transform, "AnteText",           "Ante 1/8  ·  Blind 1/3");
+        var featuredLetterTxt = AddLabel(topBar.transform, "FeaturedLetterText", "", fontSize: 22, bold: true);
         featuredLetterTxt.color = new Color(1f, 0.88f, 0.25f); // gold — stands out from other labels
 
         // Wire RunUI (HUD labels only — lexicon parents wired after GamePanel/ScoringPanel are built)
         runUI.anteText           = anteText;
-        runUI.blindText          = blindText;
         runUI.livesText          = livesText;
-        runUI.goldText           = goldText;
-        runUI.scoreText          = scoreText;
-        runUI.targetText         = targetText;
-        runUI.redrawsText        = redrawsText;
-        runUI.bossModifierText   = bossModText;
         runUI.featuredLetterText = featuredLetterTxt;
         runUI.lexiconCardPrefab  = lexiconCardPrefab;
+
+        // HUD must render on top of all full-screen panels (GamePanel, ShopPanel etc.)
+        // Add a nested Canvas with overrideSorting so it always draws above the root Canvas
+        var hudCanvas = hudGo.AddComponent<Canvas>();
+        hudCanvas.overrideSorting = true;
+        hudCanvas.sortingOrder    = 10;
+        hudGo.AddComponent<UnityEngine.UI.GraphicRaycaster>();
 
         // ── MainMenuPanel ─────────────────────────────────────────────────────
         var mainMenuGo = CreatePanel(canvasGo.transform, "MainMenuPanel",
@@ -191,61 +254,16 @@ public static class SceneBuilder
         gridUI.cellPrefab  = cellPrefab;
         gridUI.gridParent  = gridContainerGo.GetComponent<RectTransform>();
 
-        // ── GameInfoPanel — left sidebar, above ScorePreview ─────────────────
-        // Mirrors the ScoreOverlay on the scoring screen so the player always sees
-        // blind name, ante, lives, score/target, and The Glossary's featured letter.
-        var gameInfoGo = new GameObject("GameInfoPanel", typeof(RectTransform));
-        gameInfoGo.transform.SetParent(gamePanelGo.transform, false);
-        var giRt = gameInfoGo.GetComponent<RectTransform>();
-        giRt.anchorMin        = new Vector2(0f, 0.5f);
-        giRt.anchorMax        = new Vector2(0f, 0.5f);
-        giRt.pivot            = new Vector2(0f, 0.5f);
-        giRt.anchoredPosition = new Vector2(10f, 155f);   // 155px above vertical centre
-        giRt.sizeDelta        = new Vector2(260f, 200f);
-        gameInfoGo.AddComponent<Image>().color = new Color(0.18f, 0.14f, 0.16f, 0.92f);
-        AddVLG(gameInfoGo, 8, TextAnchor.UpperCenter);
-
-        // Blind name — large, bold, always visible
-        var gameBlindLabelTxt = AddLabel(gameInfoGo.transform, "GameBlindLabel", "Small Blind",
-                                         fontSize: 22, bold: true);
-        gameBlindLabelTxt.color = new Color(1f, 0.88f, 0.55f); // warm gold
-
-        // Ante row
-        var gameAnteLabelTxt = AddLabel(gameInfoGo.transform, "GameAnteLabel", "Ante 1 / 8",
-                                        fontSize: 16);
-
-        // Lives — rose tint
-        var gameLivesLabelTxt = AddLabel(gameInfoGo.transform, "GameLivesLabel", "♥  4",
-                                         fontSize: 20, bold: true);
-        gameLivesLabelTxt.color = new Color(0.95f, 0.55f, 0.60f); // rose
-
-        // Score / target
-        var gameScoreLabelTxt = AddLabel(gameInfoGo.transform, "GameScoreLabel", "0  /  300",
-                                         fontSize: 18);
-
-        // Featured letter — only shown when The Glossary is active
-        var gameFeaturedLetterLabelTxt = AddLabel(gameInfoGo.transform, "GameFeaturedLetterLabel", "",
-                                                  fontSize: 26, bold: true);
-        gameFeaturedLetterLabelTxt.color = new Color(1f, 0.88f, 0.25f); // gold
-        gameFeaturedLetterLabelTxt.gameObject.SetActive(false); // hidden until Glossary is active
-
-        // Wire new RunUI game-panel label fields
-        runUI.gameBlindLabel          = gameBlindLabelTxt;
-        runUI.gameAnteLabel           = gameAnteLabelTxt;
-        runUI.gameLivesLabel          = gameLivesLabelTxt;
-        runUI.gameScoreLabel          = gameScoreLabelTxt;
-        runUI.gameFeaturedLetterLabel = gameFeaturedLetterLabelTxt;
-
         // Score preview panel — left side of game panel (ScrollRect so long breakdowns don't overflow)
-        // Sits below GameInfoPanel; height reduced from 520 → 310 to make room.
+        // GameInfoPanel removed — blind/ante/lives info is now shown in the TopBar.
         var previewGo = new GameObject("ScorePreview", typeof(RectTransform));
         previewGo.transform.SetParent(gamePanelGo.transform, false);
         var previewRt = previewGo.GetComponent<RectTransform>();
         previewRt.anchorMin        = new Vector2(0f, 0.5f);
         previewRt.anchorMax        = new Vector2(0f, 0.5f);
         previewRt.pivot            = new Vector2(0f, 0.5f);
-        previewRt.anchoredPosition = new Vector2(10f, -107f); // shifted down to sit below GameInfoPanel
-        previewRt.sizeDelta        = new Vector2(260f, 310f);
+        previewRt.anchoredPosition = new Vector2(10f, 0f);   // centred vertically
+        previewRt.sizeDelta        = new Vector2(260f, 460f); // taller now that GameInfoPanel is gone
         previewGo.AddComponent<Image>().color = new Color(0.18f, 0.14f, 0.16f, 0.92f);
 
         var previewScroll = previewGo.AddComponent<ScrollRect>();
@@ -388,6 +406,8 @@ public static class SceneBuilder
         scoreUI.wordNameText      = wordNameTxt;
         scoreUI.wordBreakdownText = bsTxt;
         scoreUI.continueButton    = continueBtn.GetComponent<Button>();
+        scoreUI.wordTilePrefab    = wordTilePrefab;
+        scoreUI.wordRowPrefab     = wordRowPrefab;
 
         // Scoring Lexicon Sidebar — mirrors the GamePanel LexiconSidebar position so
         // lexicon cards remain visible (and flash) during the chip-zoom animation.
@@ -847,6 +867,49 @@ public static class SceneBuilder
         costTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
 
         return SavePrefab(go, "UpgradeOption");
+    }
+
+    // ── WordTile ──────────────────────────────────────────────────────────────
+    // Mirrors the inline tile structure used by ScoreUI.SpawnTile().
+    // Saved as a prefab so you can edit the visual in the Unity editor.
+    // Child GameObjects are named "L" (letter) and "C" (chips) — ScoreUI
+    // finds them by name to populate their Text components at runtime.
+    private static GameObject BuildWordTilePrefab()
+    {
+        var go = new GameObject("WordTile", typeof(RectTransform));
+        go.GetComponent<RectTransform>().sizeDelta = new Vector2(62f, 82f);
+
+        var img = go.AddComponent<Image>();
+        img.color = new Color(0.988f, 0.867f, 0.737f); // #FCDDBC soft peach
+
+        var ol = go.AddComponent<Outline>();
+        ol.effectColor    = new Color(0.55f, 0.40f, 0.20f, 0.5f);
+        ol.effectDistance = new Vector2(1.5f, -1.5f);
+
+        // "L" — letter text (upper 70% of tile)
+        var letterTxt = CreateText(go.transform, "L", "A",
+                                   fontSize: 30, bold: true, alignment: TextAnchor.MiddleCenter,
+                                   anchorMin: new Vector2(0f, 0.30f), anchorMax: Vector2.one);
+        letterTxt.color = new Color(0.22f, 0.18f, 0.20f); // dark mauve
+
+        // "C" — chip value text (lower 34% of tile)
+        var chipsTxt = CreateText(go.transform, "C", "1",
+                                  fontSize: 14, bold: false, alignment: TextAnchor.MiddleCenter,
+                                  anchorMin: Vector2.zero, anchorMax: new Vector2(1f, 0.34f));
+        chipsTxt.color = new Color(0.45f, 0.28f, 0.10f); // dark amber
+
+        return SavePrefab(go, "WordTile");
+    }
+
+    // ── WordRow ───────────────────────────────────────────────────────────────
+    // Transparent container for one word's tiles in the ScoreUI animation.
+    // Width is driven by anchor stretch at runtime; height is set via sizeDelta.
+    private static GameObject BuildWordRowPrefab()
+    {
+        var go = new GameObject("WordRow", typeof(RectTransform));
+        go.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 112f);
+        // Intentionally no Image — transparent container.
+        return SavePrefab(go, "WordRow");
     }
 
     // =========================================================================

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86a4b7912a726fc489660067eb4f8958, type: 3}
   m_Name: Rare_Letter
-  m_EditorClassIdentifier: Assembly-CSharp::LexiconWordData
+  m_EditorClassIdentifier: 
   displayName: Rare Letter
   flavorText: Uncommon letters carry uncommon power.
   effectDescription: "Q, Z, X, and J each add +0.5\xD7 multiplier."

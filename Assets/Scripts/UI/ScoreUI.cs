@@ -15,6 +15,10 @@ public class ScoreUI : MonoBehaviour
 {
     public static ScoreUI Instance { get; private set; }
 
+    [Header("Prefabs — wired by SceneBuilder")]
+    public GameObject wordTilePrefab;   // optional: instantiated for each scoring tile
+    public GameObject wordRowPrefab;    // optional: instantiated for each word row container
+
     [Header("References — wired by SceneBuilder (all optional; auto-created if absent)")]
     public Text   totalScoreText;
     public Text   targetScoreText;
@@ -43,7 +47,7 @@ public class ScoreUI : MonoBehaviour
     private const float TileW   = 62f;
     private const float TileH   = 82f;
     private const float TileGap = 4f;
-    private const float RowH    = 112f;
+    private const float RowH    = 130f;  // TileH(82) + room for bonus label below
     private const float RowGap  = 12f;
 
     // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -84,12 +88,13 @@ public class ScoreUI : MonoBehaviour
             var go = new GameObject("WordDisplayArea", typeof(RectTransform));
             go.transform.SetParent(transform, false); // child of the SCORING PANEL
             _wordDisplayArea           = go.GetComponent<RectTransform>();
-            // Centre-right area — clear of the left score overlay (≈280 px wide).
-            // Rows grow downward from the top of this region.
-            _wordDisplayArea.anchorMin = new Vector2(0.15f, 0f);
-            _wordDisplayArea.anchorMax = new Vector2(1f,    1f);
-            _wordDisplayArea.offsetMin = new Vector2(10f,   60f);
-            _wordDisplayArea.offsetMax = new Vector2(-20f, -160f);
+            // Centred between the left ScoreOverlay (right edge ≈270px) and the
+            // right ScoringLexiconSidebar (left edge ≈ screen_width - 430px).
+            // Using pixel offsets from screen edges so centering is resolution-independent.
+            _wordDisplayArea.anchorMin = new Vector2(0f, 0f);
+            _wordDisplayArea.anchorMax = new Vector2(1f, 1f);
+            _wordDisplayArea.offsetMin = new Vector2(280f,  60f);   // 280px from left  (past score overlay)
+            _wordDisplayArea.offsetMax = new Vector2(-440f, -160f); // 440px from right (past lexicon sidebar)
         }
 
         // PASSED / FAILED text: anchored inside the word display area.
@@ -290,8 +295,15 @@ public class ScoreUI : MonoBehaviour
     // ── Spawn helpers ──────────────────────────────────────────────────────────
     private GameObject SpawnWordRow(string word, float topOffset, float rowH)
     {
-        var go = new GameObject($"Row_{word}", typeof(RectTransform));
-        go.transform.SetParent(_wordDisplayArea ?? transform, false);
+        GameObject go;
+        if (wordRowPrefab != null)
+            go = Instantiate(wordRowPrefab, _wordDisplayArea ?? transform);
+        else
+        {
+            go = new GameObject($"Row_{word}", typeof(RectTransform));
+            go.transform.SetParent(_wordDisplayArea ?? transform, false);
+        }
+        go.name = $"Row_{word}";
         var rt              = go.GetComponent<RectTransform>();
         rt.anchorMin        = new Vector2(0f, 1f);
         rt.anchorMax        = new Vector2(1f, 1f);
@@ -301,33 +313,50 @@ public class ScoreUI : MonoBehaviour
         return go;
     }
 
-    private static GameObject SpawnTile(Transform parent, char letter, int chips, float posX,
-                                        float tileW, float tileH, int lFont, int cFont)
+    private GameObject SpawnTile(Transform parent, char letter, int chips, float posX,
+                                 float tileW, float tileH, int lFont, int cFont)
     {
-        var go = new GameObject($"T_{letter}", typeof(RectTransform));
-        go.transform.SetParent(parent, false);
+        GameObject go;
+        if (wordTilePrefab != null)
+        {
+            // Instantiate the editor-authored prefab and populate the named text children.
+            go = Instantiate(wordTilePrefab, parent);
+            foreach (var t in go.GetComponentsInChildren<Text>())
+            {
+                if (t.name == "L") t.text = letter.ToString().ToUpper();
+                if (t.name == "C") t.text = chips.ToString();
+            }
+        }
+        else
+        {
+            // Fallback: build the tile inline (same as before).
+            go = new GameObject($"T_{letter}", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+
+            go.AddComponent<Image>().color = new Color(0.988f, 0.867f, 0.737f);
+
+            var ol = go.AddComponent<Outline>();
+            ol.effectColor    = new Color(0.55f, 0.40f, 0.20f, 0.5f);
+            ol.effectDistance = new Vector2(1.5f, -1.5f);
+
+            // Letter (upper portion)
+            AddText(go.transform, "L", letter.ToString().ToUpper(),
+                    new Vector2(0f, 0.30f), Vector2.one, lFont, FontStyle.Bold,
+                    new Color(0.22f, 0.18f, 0.20f));
+
+            // Chip value (bottom strip)
+            AddText(go.transform, "C", chips.ToString(),
+                    Vector2.zero, new Vector2(1f, 0.34f), cFont, FontStyle.Normal,
+                    new Color(0.45f, 0.28f, 0.10f));
+        }
+
+        go.name = $"T_{letter}";
         var rt              = go.GetComponent<RectTransform>();
         rt.anchorMin        = new Vector2(0.5f, 0.5f);
         rt.anchorMax        = new Vector2(0.5f, 0.5f);
         rt.pivot            = new Vector2(0.5f, 0.5f);
         rt.anchoredPosition = new Vector2(posX, 0f);
         rt.sizeDelta        = new Vector2(tileW, tileH);
-
-        go.AddComponent<Image>().color = new Color(0.988f, 0.867f, 0.737f);
-
-        var ol = go.AddComponent<Outline>();
-        ol.effectColor    = new Color(0.55f, 0.40f, 0.20f, 0.5f);
-        ol.effectDistance = new Vector2(1.5f, -1.5f);
-
-        // Letter (upper portion)
-        AddText(go.transform, "L", letter.ToString().ToUpper(),
-                new Vector2(0f, 0.30f), Vector2.one, lFont, FontStyle.Bold,
-                new Color(0.22f, 0.18f, 0.20f));
-
-        // Chip value (bottom strip)
-        AddText(go.transform, "C", chips.ToString(),
-                Vector2.zero, new Vector2(1f, 0.34f), cFont, FontStyle.Normal,
-                new Color(0.45f, 0.28f, 0.10f));
 
         return go;
     }
@@ -390,10 +419,12 @@ public class ScoreUI : MonoBehaviour
         var go = new GameObject("BonusLabels", typeof(RectTransform));
         go.transform.SetParent(rowParent, false);
         var rt       = go.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0f, 0f);
-        rt.anchorMax = new Vector2(1f, 0f);
-        rt.pivot     = new Vector2(0.5f, 0f);
-        rt.anchoredPosition = new Vector2(0f, 4f);
+        // Anchor to the row's vertical centre, then offset to sit just below the tile.
+        // TileH/2 = 41px below centre = tile bottom; +4px gap gives 45px total offset.
+        rt.anchorMin        = new Vector2(0f, 0.5f);
+        rt.anchorMax        = new Vector2(1f, 0.5f);
+        rt.pivot            = new Vector2(0.5f, 1f);
+        rt.anchoredPosition = new Vector2(0f, -(TileH * 0.5f + 4f));
         rt.sizeDelta        = new Vector2(0f, 20f);
 
         var txt = go.AddComponent<Text>();

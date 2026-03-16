@@ -10,12 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86a4b7912a726fc489660067eb4f8958, type: 3}
-  m_Name: Polysyllabic
+  m_Name: Gemination
   m_EditorClassIdentifier: 
-  displayName: Polysyllabic
-  flavorText: The longer the word, the more it commands.
-  effectDescription: "5+ letters: +0.5\xD7\n7+ letters: +1.0\xD7\n10+ letters: +2.0\xD7"
+  displayName: Gemination
+  flavorText: The stutter becomes strength.
+  effectDescription: "Each adjacent repeated letter pair (LL, SS, TT, etc.) adds
+    +0.8\xD7 Mult."
   artwork: {fileID: 0}
-  effectType: 10
+  effectType: 15
   effectValue: 0
   shopCost: 6

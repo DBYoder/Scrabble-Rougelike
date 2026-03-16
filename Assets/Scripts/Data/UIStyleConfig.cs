@@ -57,4 +57,34 @@ public class UIStyleConfig : ScriptableObject
     public Color shopAffordable  = new Color(0.412f, 0.345f, 0.373f);  // #69585F dark mauve
     public Color shopCantAfford  = new Color(0.180f, 0.141f, 0.165f);  // #2E2429 very dark
     public Color shopLexiconFull = new Color(0.294f, 0.243f, 0.165f);  // #4B3E2A dark ochre
+
+    // ── Sprites ───────────────────────────────────────────────────────────────
+    // Assign sprites here to replace solid-colour rectangles with real artwork.
+    // Leave any field empty to keep the existing solid-colour fallback.
+
+    [Header("Panel Sprites (9-slice)")]
+    public Sprite panelBgSprite;        // MainMenuPanel, ShopPanel, UpgradePanel, GameOver, Victory
+    public Sprite panelDarkSprite;      // GamePanel, ScoreOverlay, BossPreviewPanel
+    public Sprite sidebarSprite;        // LexiconSidebar, ScoringLexiconSidebar
+    public Sprite stripSprite;          // TopBar, HandArea
+
+    [Header("Button Sprites (9-slice)")]
+    public Sprite btnConfirmSprite;
+    public Sprite btnDangerSprite;
+    public Sprite btnNeutralSprite;
+    public Sprite btnSecondarySprite;
+
+    [Header("Tile Sprites")]
+    public Sprite tileCardSprite;       // TileCard prefab + ScoreUI WordTile
+    public Sprite gridCellSprite;       // GridCell prefab (empty cell background)
+    public Sprite gridCellModTWSprite;  // Triple Word cell (optional distinct sprite)
+    public Sprite gridCellModDWSprite;  // Double Word cell
+    public Sprite gridCellModTLSprite;  // Triple Letter cell
+    public Sprite gridCellModDLSprite;  // Double Letter cell
+
+    [Header("Card Sprites")]
+    public Sprite lexiconCardSprite;
+    public Sprite shopItemSprite;
+    public Sprite upgradeOptionSprite;
+    public Sprite wordRowTileSprite;    // WordTile prefab used in ScoreUI scoring animation
 }
