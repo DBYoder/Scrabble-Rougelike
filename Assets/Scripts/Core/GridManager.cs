@@ -1,4 +1,5 @@
-// GridManager.cs — Owns the 9×9 grid, placement rules, and word detection.
+// GridManager.cs — Owns the 13×13 grid, placement rules, and word detection.
+// The board starts as a 9×9 area (outer cells locked) and expands via RunManager.unlockedRadius.
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,9 +7,9 @@ public class GridManager : MonoBehaviour
 {
     public static GridManager Instance { get; private set; }
 
-    public const int GridSize = 9;
-    public const int CenterX  = 4;
-    public const int CenterY  = 4;
+    public const int GridSize = 13;
+    public const int CenterX  = 6;
+    public const int CenterY  = 6;
     public const int MinWordLength = 2;
 
     private GridCell[,] grid;
@@ -37,24 +38,52 @@ public class GridManager : MonoBehaviour
 
     private void SetupModifiers()
     {
-        // Triple Word Score — 4 corners only
+        // ── Inner 9×9 area (unlocked from the start, unlockedRadius = 4) ─────
+        // Triple Word Score — inner corners (the 9×9 corners when radius = 4)
         foreach (var (x, y) in new (int,int)[]
-            { (0,0),(0,8),(8,0),(8,8) })
+            { (2,2),(2,10),(10,2),(10,10) })
             grid[x, y].modifier = CellModifier.TripleWord;
 
-        // Double Word Score — center star + 4 inner diagonal cells
+        // Double Word Score — center star + inner diagonals
         foreach (var (x, y) in new (int,int)[]
-            { (4,4),(2,2),(2,6),(6,2),(6,6) })
+            { (6,6),(4,4),(4,8),(8,4),(8,8) })
             grid[x, y].modifier = CellModifier.DoubleWord;
 
-        // Triple Letter Score — 4 edge midpoints
+        // Triple Letter Score — cross midpoints of 9×9 area
         foreach (var (x, y) in new (int,int)[]
-            { (0,4),(4,0),(8,4),(4,8) })
+            { (2,6),(6,2),(10,6),(6,10) })
             grid[x, y].modifier = CellModifier.TripleLetter;
 
-        // Double Letter Score — 8 inner ring positions
+        // Double Letter Score — inner ring of 9×9 area
         foreach (var (x, y) in new (int,int)[]
-            { (1,3),(1,5),(3,1),(5,1),(3,7),(5,7),(7,3),(7,5) })
+            { (3,5),(3,7),(5,3),(7,3),(5,9),(7,9),(9,5),(9,7) })
+            grid[x, y].modifier = CellModifier.DoubleLetter;
+
+        // ── 11×11 ring (unlocked after Chapter 3 Exam, unlockedRadius = 5) ───
+        // Triple Letter Score — 11×11 edge midpoints
+        foreach (var (x, y) in new (int,int)[]
+            { (1,6),(6,1),(11,6),(6,11) })
+            grid[x, y].modifier = CellModifier.TripleLetter;
+
+        // Double Letter Score — 11×11 ring diagonals
+        foreach (var (x, y) in new (int,int)[]
+            { (1,4),(1,8),(4,1),(8,1),(4,11),(8,11),(11,4),(11,8) })
+            grid[x, y].modifier = CellModifier.DoubleLetter;
+
+        // ── 13×13 outermost ring (unlocked after Chapter 6 Exam, radius = 6) ─
+        // Triple Word Score — true corners (exciting unlock reward!)
+        foreach (var (x, y) in new (int,int)[]
+            { (0,0),(0,12),(12,0),(12,12) })
+            grid[x, y].modifier = CellModifier.TripleWord;
+
+        // Triple Letter Score — outer edge midpoints
+        foreach (var (x, y) in new (int,int)[]
+            { (0,6),(6,0),(12,6),(6,12) })
+            grid[x, y].modifier = CellModifier.TripleLetter;
+
+        // Double Letter Score — outer ring
+        foreach (var (x, y) in new (int,int)[]
+            { (0,3),(0,9),(3,0),(9,0),(3,12),(9,12),(12,3),(12,9) })
             grid[x, y].modifier = CellModifier.DoubleLetter;
     }
 
@@ -71,6 +100,10 @@ public class GridManager : MonoBehaviour
     {
         if (x < 0 || x >= GridSize || y < 0 || y >= GridSize) return false;
         if (grid[x, y].IsOccupied) return false;
+
+        // ── Board lock: outer cells are locked until the board expands ────────
+        if (RunManager.Instance != null && !RunManager.Instance.IsCellUnlocked(x, y))
+            return false;
 
         // ── Boss modifier: RareTilesLocked ────────────────────────────────────
         // Q/Z/X/J cannot be placed on this boss blind.
@@ -243,8 +276,6 @@ public class GridManager : MonoBehaviour
     {
         if (x < 0 || x >= GridSize || y < 0 || y >= GridSize) return;
         var cell = grid[x, y];
-        // If we're removing the center tile, allow first-word flag to reset only
-        // when the grid is otherwise empty (safety guard).
         cell.placedTile = null;
     }
 
@@ -254,6 +285,7 @@ public class GridManager : MonoBehaviour
     /// <summary>
     /// Scans all rows and columns for runs of 2+ placed letters.
     /// Returns all runs with length ≥ MinWordLength as Word objects (lowercase).
+    /// Only considers unlocked cells.
     /// </summary>
     public List<Word> GetAllWords()
     {

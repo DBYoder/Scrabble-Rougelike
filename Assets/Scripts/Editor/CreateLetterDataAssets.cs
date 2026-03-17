@@ -206,35 +206,35 @@ public static class CreateLetterDataAssets
             // Ante 1
             ("Ante1_Blind0", 1,0,   30, 3, BossModifier.None,             "", "Small Blind — learn the ropes."),
             ("Ante1_Blind1", 1,1,   60, 4, BossModifier.None,             "", "Big Blind — push harder."),
-            ("Ante1_Blind2", 1,2,   90, 5, BossModifier.NoShortWords,     "Boss: Short words (3 letters) don't count.", "Boss Blind."),
+            ("Ante1_Blind2", 1,2,   90, 5, BossModifier.NoShortWords,     "Exam:Short words (3 letters) don't count.", "Exam."),
             // Ante 2
             ("Ante2_Blind0", 2,0,  180, 4, BossModifier.None,             "", "Small Blind."),
             ("Ante2_Blind1", 2,1,  300, 5, BossModifier.None,             "", "Big Blind."),
-            ("Ante2_Blind2", 2,2,  450, 6, BossModifier.VowelsWorthZero,  "Boss: Vowels are worth 0 chips.", "Boss Blind."),
+            ("Ante2_Blind2", 2,2,  450, 6, BossModifier.VowelsWorthZero,  "Exam:Vowels are worth 0 chips.", "Exam."),
             // Ante 3
             ("Ante3_Blind0", 3,0,  650, 5, BossModifier.None,             "", "Small Blind."),
             ("Ante3_Blind1", 3,1,  950, 6, BossModifier.None,             "", "Big Blind."),
-            ("Ante3_Blind2", 3,2, 1300, 7, BossModifier.NoIntersections,  "Boss: Intersection bonuses disabled.", "Boss Blind."),
+            ("Ante3_Blind2", 3,2, 1300, 7, BossModifier.NoIntersections,  "Exam:Intersection bonuses disabled.", "Exam."),
             // Ante 4
             ("Ante4_Blind0", 4,0, 1800, 6, BossModifier.None,             "", "Small Blind."),
             ("Ante4_Blind1", 4,1, 2600, 7, BossModifier.None,             "", "Big Blind."),
-            ("Ante4_Blind2", 4,2, 3600, 8, BossModifier.DoubleRedrawCost, "Boss: Each redraw costs 2 charges.", "Boss Blind."),
+            ("Ante4_Blind2", 4,2, 3600, 8, BossModifier.DoubleRedrawCost, "Exam:Each redraw costs 2 charges.", "Exam."),
             // Ante 5
             ("Ante5_Blind0", 5,0, 4800, 7, BossModifier.None,             "", "Small Blind."),
             ("Ante5_Blind1", 5,1, 7200, 8, BossModifier.None,             "", "Big Blind."),
-            ("Ante5_Blind2", 5,2,10000, 9, BossModifier.RareTilesLocked,  "Boss: Rare letters (Q/Z/X/J) cannot be placed.", "Boss Blind."),
+            ("Ante5_Blind2", 5,2,10000, 9, BossModifier.RareTilesLocked,  "Exam:Rare letters (Q/Z/X/J) cannot be placed.", "Exam."),
             // Ante 6
             ("Ante6_Blind0", 6,0,13000, 8, BossModifier.None,             "", "Small Blind."),
             ("Ante6_Blind1", 6,1,19000, 9, BossModifier.None,             "", "Big Blind."),
-            ("Ante6_Blind2", 6,2,26000,10, BossModifier.NoShortWords,     "Boss: Short words (3 letters) don't count.", "Boss Blind."),
+            ("Ante6_Blind2", 6,2,26000,10, BossModifier.NoShortWords,     "Exam:Short words (3 letters) don't count.", "Exam."),
             // Ante 7
             ("Ante7_Blind0", 7,0,35000, 9, BossModifier.None,             "", "Small Blind."),
             ("Ante7_Blind1", 7,1,52000,10, BossModifier.None,             "", "Big Blind."),
-            ("Ante7_Blind2", 7,2,70000,11, BossModifier.VowelsWorthZero,  "Boss: Vowels are worth 0 chips.", "Boss Blind."),
+            ("Ante7_Blind2", 7,2,70000,11, BossModifier.VowelsWorthZero,  "Exam:Vowels are worth 0 chips.", "Exam."),
             // Ante 8
             ("Ante8_Blind0", 8,0, 90000,10, BossModifier.None,            "", "Small Blind — the final stretch."),
             ("Ante8_Blind1", 8,1,135000,11, BossModifier.None,            "", "Big Blind — almost there."),
-            ("Ante8_Blind2", 8,2,180000,12, BossModifier.NoIntersections, "Boss: Intersection bonuses disabled.", "Final Boss Blind."),
+            ("Ante8_Blind2", 8,2,180000,12, BossModifier.NoIntersections, "Exam:Intersection bonuses disabled.", "Final Exam."),
         };
 
         int created = 0;
@@ -279,15 +279,15 @@ public static class CreateLetterDataAssets
         {
             ("Ante1_Blind0", 1, 0,  30,  3, BossModifier.None,           "Small Blind — learn the ropes."),
             ("Ante1_Blind1", 1, 1,  60,  4, BossModifier.None,           "Big Blind — push harder."),
-            ("Ante1_Blind2", 1, 2,  90,  5, BossModifier.NoShortWords,   "Boss: Short words (3 letters) don't count."),
+            ("Ante1_Blind2", 1, 2,  90,  5, BossModifier.NoShortWords,   "Exam:Short words (3 letters) don't count."),
 
             ("Ante2_Blind0", 2, 0, 180,  4, BossModifier.None,           "Small Blind."),
             ("Ante2_Blind1", 2, 1, 300,  5, BossModifier.None,           "Big Blind."),
-            ("Ante2_Blind2", 2, 2, 450,  6, BossModifier.VowelsWorthZero,"Boss: Vowels are worth 0 chips."),
+            ("Ante2_Blind2", 2, 2, 450,  6, BossModifier.VowelsWorthZero,"Exam:Vowels are worth 0 chips."),
 
             ("Ante3_Blind0", 3, 0, 650,  5, BossModifier.None,           "Small Blind."),
             ("Ante3_Blind1", 3, 1, 950,  6, BossModifier.None,           "Big Blind."),
-            ("Ante3_Blind2", 3, 2,1300,  7, BossModifier.NoIntersections,"Boss: Intersection bonuses disabled."),
+            ("Ante3_Blind2", 3, 2,1300,  7, BossModifier.NoIntersections,"Exam:Intersection bonuses disabled."),
         };
 
         int created = 0;

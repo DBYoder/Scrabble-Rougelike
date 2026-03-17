@@ -1,4 +1,4 @@
-// RunUI.cs — Always-visible HUD showing Ante, Blind, Lives, Gold, Score, and Lexicon bars.
+// RunUI.cs — Always-visible HUD showing Chapter, Drafts, and Lexicon bars.
 // lexiconCardPrefab should have children: Text "LexiconName", Text "LexiconEffect".
 using System.Collections;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ public class RunUI : MonoBehaviour
 
     [Header("HUD Labels")]
     public Text livesText;
-    public Text anteText;           // "Ante 2/8  ·  Blind 3/3"
+    public Text anteText;           // "Chapter 2/8  ·  Test"
     public Text featuredLetterText; // Shows featured letter when The Glossary is active
 
     [Header("Lexicon Display")]
@@ -34,9 +34,10 @@ public class RunUI : MonoBehaviour
         if (RunManager.Instance == null) return;
         var rm = RunManager.Instance;
 
-        // Ante + blind-within-ante progress ("Ante 2/8  ·  Blind 3/3")
-        Set(livesText, $"♥ {rm.lives}");
-        Set(anteText,  $"Ante {rm.currentAnte} / {RunManager.MaxAntes}  ·  Blind {rm.currentBlind + 1} / 3");
+        // Chapter + stage-within-chapter progress ("Chapter 2/8  ·  Test")
+        string stageName = rm.currentBlind == 0 ? "Exercise" : rm.currentBlind == 1 ? "Test" : "Exam";
+        Set(livesText, $"Drafts: {rm.lives}");
+        Set(anteText,  $"Chapter {rm.currentAnte} / {RunManager.MaxAntes}  ·  {stageName}");
 
         if (featuredLetterText != null)
         {
@@ -114,8 +115,8 @@ public class RunUI : MonoBehaviour
         Color originalColor = livesText.color;
         livesText.color = new Color(0.937f, 0.584f, 0.616f); // rose
         livesText.text  = livesRemaining > 0
-            ? $"♥ {livesRemaining}  — RETRY!"
-            : $"♥ 0  — GAME OVER";
+            ? $"Drafts: {livesRemaining}  — RETRY!"
+            : $"Drafts: 0  — GAME OVER";
         yield return new WaitForSeconds(1.2f);
         livesText.color = originalColor;
         // HUD will be refreshed by the next state transition

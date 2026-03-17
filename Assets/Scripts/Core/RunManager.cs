@@ -2,6 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>Describes what the player earned after clearing an Exam.</summary>
+public struct ProgressionRewards
+{
+    public bool handGrew;
+    public int  previousHandSize;
+    public int  newHandSize;
+    public bool boardExpanded;
+    public int  previousBoardSize; // board edge length in cells (5, 7, or 9)
+    public int  newBoardSize;
+    public int  previousRadius;    // for FlashNewCells
+    public int  newRadius;
+}
+
 public class RunManager : MonoBehaviour
 {
     public static RunManager Instance { get; private set; }
@@ -33,6 +46,19 @@ public class RunManager : MonoBehaviour
     // ── Glossary (The Glossary lexicon effect) ────────────────────────────────
     public char featuredLetter { get; private set; }
 
+    // ── Progression Rewards (awarded after each Exam) ─────────────────────────
+    /// <summary>Current maximum hand size. Starts at 7, grows +1 per Exam (cap 10).</summary>
+    public int currentHandSize { get; private set; } = 7;
+    /// <summary>
+    /// Half-side of the unlocked square board area (for the 13×13 grid, half = 6).
+    ///   radius 4 → centre  9×9  (cells 2–10)  — starting area
+    ///   radius 5 → centre 11×11 (cells 1–11)  — unlocks after Exam 3
+    ///   radius 6 → full   13×13 (cells 0–12)  — unlocks after Exam 6
+    /// </summary>
+    public int unlockedRadius  { get; private set; } = 4;
+    /// <summary>Total Exams cleared this run.</summary>
+    public int examsCleared    { get; private set; } = 0;
+
     // ── Blind Assets ─────────────────────────────────────────────────────────
     private BlindData[] blindAssets;
 
@@ -54,6 +80,9 @@ public class RunManager : MonoBehaviour
         totalWordsScored = 0;
         highestWordScore = 0;
         isStarterPick    = true;
+        currentHandSize  = 7;
+        unlockedRadius   = 4;   // starts at 9×9 centre of 13×13; expands to 11×11 then full 13×13
+        examsCleared     = 0;
         activeLexicon.Clear();
         scoredWordSet.Clear();
         blindAssets   = Resources.LoadAll<BlindData>("Blinds");
@@ -99,6 +128,54 @@ public class RunManager : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Awards post-Exam progression rewards. Called by GameManager after an Exam is cleared.
+    /// Hand grows +1 per Exam (cap 10). Board expands to 7×7 after Exam 3 and to 9×9 after Exam 6.
+    /// Returns a <see cref="ProgressionRewards"/> struct describing exactly what changed.
+    /// </summary>
+    public ProgressionRewards OnExamCleared()
+    {
+        examsCleared++;
+
+        var r = new ProgressionRewards
+        {
+            previousHandSize  = currentHandSize,
+            previousRadius    = unlockedRadius,
+            previousBoardSize = unlockedRadius * 2 + 1,
+        };
+
+        // Hand: +1 per Exam, cap at 10
+        if (currentHandSize < 10)
+        {
+            currentHandSize++;
+            r.handGrew = true;
+        }
+        r.newHandSize = currentHandSize;
+
+        // Board: 5×5 → 7×7 at Exam 3,  7×7 → 9×9 at Exam 6
+        if (examsCleared == 3 || examsCleared == 6)
+        {
+            unlockedRadius++;
+            r.boardExpanded = true;
+        }
+        r.newRadius    = unlockedRadius;
+        r.newBoardSize = unlockedRadius * 2 + 1;
+
+        return r;
+    }
+
+    /// <summary>
+    /// Returns true if the grid coordinate (x, y) is within the currently unlocked board area.
+    /// For the 9×9 grid (GridSize=9, half=4):
+    ///   radius 2 → 5×5   radius 3 → 7×7   radius 4 → full 9×9
+    /// </summary>
+    public bool IsCellUnlocked(int x, int y)
+    {
+        int half = GridManager.GridSize / 2; // = 6 for 13×13
+        return x >= half - unlockedRadius && x <= half + unlockedRadius
+            && y >= half - unlockedRadius && y <= half + unlockedRadius;
+    }
+
     // ── Lives & Gold ─────────────────────────────────────────────────────────
     public void LoseLife()              => lives = Mathf.Max(0, lives - 1);
     public void EarnGold(int amount)    => gold += amount;
@@ -114,6 +191,17 @@ public class RunManager : MonoBehaviour
     public void AddLexicon(LexiconWordData lex)
     {
         if (CanAddLexicon()) activeLexicon.Add(lex);
+    }
+
+    /// <summary>
+    /// Removes a Lexicon card from the active list and refunds half its shop cost
+    /// (minimum 1 gold). Safe to call any time, including mid-shop.
+    /// </summary>
+    public void SellLexicon(LexiconWordData lex)
+    {
+        if (lex == null || !activeLexicon.Contains(lex)) return;
+        activeLexicon.Remove(lex);
+        EarnGold(Mathf.Max(1, lex.shopCost / 2));
     }
 
     // ── Boss Blind ────────────────────────────────────────────────────────────

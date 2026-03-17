@@ -14,8 +14,8 @@ public class GridUI : MonoBehaviour
     public Transform  gridParent;   // Parent RectTransform for grid cells
 
     [Header("Layout")]
-    public float cellSize    = 48f;
-    public float cellSpacing = 2f;
+    public float cellSize    = 56f;  // 13 cells × 56 + 12 gaps × 3 = 764 px visual span
+    public float cellSpacing = 3f;
 
     [Header("Score Preview")]
     public Text scorePreviewText;
@@ -142,6 +142,20 @@ public class GridUI : MonoBehaviour
         var cell = GridManager.Instance.GetCell(x, y);
         var img  = obj.GetComponent<Image>();
         var txt  = obj.GetComponentInChildren<Text>();
+        var btn  = obj.GetComponent<Button>();
+
+        // ── Locked cells (outside the currently unlocked board radius) ────────
+        bool locked = RunManager.Instance != null && !RunManager.Instance.IsCellUnlocked(x, y);
+        if (locked)
+        {
+            if (img != null) img.color = new Color(0.10f, 0.08f, 0.10f);
+            if (txt != null) txt.text  = "";
+            if (btn != null) btn.interactable = false;
+            return;
+        }
+
+        // Re-enable button for cells that have just been unlocked
+        if (btn != null) btn.interactable = true;
 
         if (cell.IsOccupied)
         {
@@ -300,6 +314,54 @@ public class GridUI : MonoBehaviour
         foreach (char c in word)
             if (LetterData.IsRareLetter(c)) return true;
         return false;
+    }
+
+    // ── Board expansion flash ─────────────────────────────────────────────────
+    /// <summary>
+    /// Briefly highlights every cell that was just unlocked (i.e. outside
+    /// <paramref name="previousRadius"/> but inside the current unlockedRadius).
+    /// Called once per board expansion, right after BuildGrid().
+    /// </summary>
+    public void FlashNewCells(int previousRadius)
+    {
+        StartCoroutine(FlashNewCellsCoroutine(previousRadius));
+    }
+
+    private System.Collections.IEnumerator FlashNewCellsCoroutine(int prevRadius)
+    {
+        if (RunManager.Instance == null) yield break;
+
+        int half      = GridManager.GridSize / 2;
+        int newRadius = RunManager.Instance.unlockedRadius;
+
+        // Collect every cell that moved from locked → unlocked
+        var newCells = new System.Collections.Generic.List<(int x, int y)>();
+        for (int x = 0; x < GridManager.GridSize; x++)
+        {
+            for (int y = 0; y < GridManager.GridSize; y++)
+            {
+                bool wasLocked = x < half - prevRadius || x > half + prevRadius
+                              || y < half - prevRadius || y > half + prevRadius;
+                if (wasLocked && RunManager.Instance.IsCellUnlocked(x, y))
+                    newCells.Add((x, y));
+            }
+        }
+
+        // Flash three times with a warm gold highlight
+        Color highlight = new Color(0.97f, 0.88f, 0.40f); // gold
+        for (int pulse = 0; pulse < 3; pulse++)
+        {
+            foreach (var (cx, cy) in newCells)
+            {
+                var obj = cellObjects?[cx, cy];
+                var img = obj?.GetComponent<Image>();
+                if (img != null) img.color = highlight;
+            }
+            yield return new WaitForSeconds(0.18f);
+            foreach (var (cx, cy) in newCells)
+                UpdateCellVisual(cx, cy);
+            yield return new WaitForSeconds(0.18f);
+        }
     }
 
     public void FlashCell(int x, int y, Color flashColor)

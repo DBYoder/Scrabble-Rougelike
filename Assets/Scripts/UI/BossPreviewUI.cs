@@ -1,4 +1,4 @@
-// BossPreviewUI.cs — Populates the boss blind preview modal overlay.
+// BossPreviewUI.cs — Populates the Exam preview modal overlay.
 // Attached to BossPreviewPanel by SceneBuilder.
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,12 +16,18 @@ public class BossPreviewUI : MonoBehaviour
             modifierNameText.text = FormatModifierName(modifier);
 
         if (modifierDescText != null)
-            modifierDescText.text = description;
+        {
+            // Normalise legacy "Boss: " prefix → "Exam: " for consistent academic terminology.
+            string desc = description;
+            if (desc.StartsWith("Boss: ", System.StringComparison.OrdinalIgnoreCase))
+                desc = "Exam: " + desc.Substring("Boss: ".Length);
+            modifierDescText.text = desc;
+        }
 
         if (anteBlindText != null && RunManager.Instance != null)
         {
             var rm = RunManager.Instance;
-            anteBlindText.text = $"Ante {rm.currentAnte}  —  Boss Blind";
+            anteBlindText.text = $"Chapter {rm.currentAnte}  —  Exam";
         }
     }
 

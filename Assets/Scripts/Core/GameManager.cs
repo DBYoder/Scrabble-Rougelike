@@ -38,12 +38,18 @@ public class GameManager : MonoBehaviour
     [Header("Boss Preview")]
     public GameObject bossPreviewPanel;  // Modal overlay — managed independently, not in hide-all block
 
+    [Header("Progression Reward")]
+    public GameObject progressionRewardPanel; // Modal overlay — shown after each Exam is cleared
+
     [Header("End-Screen Stats")]
     public UnityEngine.UI.Text gameOverStatsText;
     public UnityEngine.UI.Text victoryStatsText;
 
     // Prevents boss preview from re-showing during a lives-retry of the same boss blind.
     private bool _bossPreviewShown;
+
+    // Previous board radius stored before OnExamCleared() so we can flash newly unlocked cells.
+    private int _prevBoardRadius = -1;
 
     // Words validated at each play submission this round.
     // Used to re-score words that were later extended (e.g. CAT → CATS).
@@ -252,6 +258,8 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        bool wasExam = RunManager.Instance.IsBossBlind; // capture before advancing
+
         _bossPreviewShown = false; // Allow the next boss blind to show its preview
         bool hasMore = RunManager.Instance.AdvanceBlind();
         if (!hasMore)
@@ -259,6 +267,22 @@ public class GameManager : MonoBehaviour
             ChangeState(GameState.Victory);
             return;
         }
+
+        // Award post-Exam progression (hand growth and/or board expansion).
+        // Board expansion takes effect when BuildGrid() is called on entering Placement.
+        if (wasExam)
+        {
+            _prevBoardRadius = RunManager.Instance.unlockedRadius; // capture before expanding
+            var rewards = RunManager.Instance.OnExamCleared();
+
+            // Show the reward modal so the player sees what they earned before the next round.
+            if (rewards.handGrew || rewards.boardExpanded)
+            {
+                ShowProgressionReward(rewards);
+                return; // ProceedFromProgressionReward() will call ChangeState(Drawing)
+            }
+        }
+
         ChangeState(GameState.Drawing);
     }
 
@@ -267,6 +291,19 @@ public class GameManager : MonoBehaviour
     {
         SetActive(bossPreviewPanel, false);
         ChangeState(GameState.Placement);
+    }
+
+    /// <summary>Called by the ONWARD button on the progression reward modal.</summary>
+    public void ProceedFromProgressionReward()
+    {
+        SetActive(progressionRewardPanel, false);
+        ChangeState(GameState.Drawing);
+    }
+
+    private void ShowProgressionReward(ProgressionRewards rewards)
+    {
+        SetActive(progressionRewardPanel, true);
+        progressionRewardPanel.GetComponent<ProgressionRewardUI>()?.Populate(rewards);
     }
 
     // ── State Handlers ────────────────────────────────────────────────────────
@@ -302,6 +339,15 @@ public class GameManager : MonoBehaviour
     {
         GridUI.Instance?.BuildGrid();
         TileHandUI.Instance?.RefreshHand();
+
+        // Flash newly unlocked cells when the board expanded after the last Exam.
+        if (_prevBoardRadius >= 0
+            && RunManager.Instance != null
+            && _prevBoardRadius < RunManager.Instance.unlockedRadius)
+        {
+            GridUI.Instance?.FlashNewCells(_prevBoardRadius);
+            _prevBoardRadius = -1; // consume — don't flash again on retry
+        }
     }
 
     private void OnEnterScoring()
@@ -363,9 +409,9 @@ public class GameManager : MonoBehaviour
     {
         if (label == null || RunManager.Instance == null) return;
         var rm = RunManager.Instance;
+        string stage = rm.currentBlind == 0 ? "Exercise" : rm.currentBlind == 1 ? "Test" : "Exam";
         label.text =
-            $"Ante {rm.currentAnte} / {RunManager.MaxAntes}  ·  " +
-            $"Blind {rm.currentBlind + 1}\n" +
+            $"Chapter {rm.currentAnte} / {RunManager.MaxAntes}  ·  {stage}\n" +
             $"Words scored: {rm.totalWordsScored}\n" +
             $"Best word: {rm.highestWordScore} pts\n" +
             $"Lexicons: {rm.activeLexicon.Count}";

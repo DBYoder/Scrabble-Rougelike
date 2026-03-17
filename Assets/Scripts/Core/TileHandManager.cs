@@ -6,7 +6,8 @@ public class TileHandManager : MonoBehaviour
 {
     public static TileHandManager Instance { get; private set; }
 
-    public const int HandSize      = 7;
+    // HandSize is now dynamic — grows as Exams are cleared (see RunManager.currentHandSize).
+    private int HandSize => RunManager.Instance != null ? RunManager.Instance.currentHandSize : 7;
     public const int BaseRedraws   = 3;
     public const int MaxWordPlays  = 5;
 

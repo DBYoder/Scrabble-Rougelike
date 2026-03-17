@@ -18,4 +18,9 @@ public class MenuButtons : MonoBehaviour
     {
         GameManager.Instance?.ProceedFromBossPreview();
     }
+
+    public void ProceedFromProgressionReward()
+    {
+        GameManager.Instance?.ProceedFromProgressionReward();
+    }
 }
