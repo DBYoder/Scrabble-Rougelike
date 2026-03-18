@@ -12,6 +12,13 @@ public class GridCell
 
     public bool IsOccupied => placedTile != null;
 
+    /// <summary>
+    /// True once this cell's modifier has been consumed during scoring.
+    /// Mirrors standard Scrabble: bonus squares only apply the first time
+    /// a tile is played on them. Reset automatically via ClearGrid → InitGrid.
+    /// </summary>
+    public bool modifierUsed;
+
     public GridCell(int x, int y)
     {
         this.x = x;

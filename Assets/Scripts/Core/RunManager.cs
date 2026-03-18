@@ -1,5 +1,6 @@
 // RunManager.cs — Tracks ante/blind progression, lives, gold, and active Lexicon.
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>Describes what the player earned after clearing an Exam.</summary>
@@ -20,9 +21,14 @@ public class RunManager : MonoBehaviour
     public static RunManager Instance { get; private set; }
 
     // ── Constants ─────────────────────────────────────────────────────────────
-    public const int MaxAntes  = 8;
-    public const int MaxLives  = 3;
-    public const int MaxLexicon = 5;
+    public const int MaxLives = 3;
+
+    // ── Active Config ─────────────────────────────────────────────────────────
+    public RunConfig ActiveConfig { get; private set; }
+
+    // MaxAntes and MaxLexicon are now per-run instance values (set from RunConfig).
+    public int MaxAntes   { get; private set; } = 8;
+    public int MaxLexicon { get; private set; } = 5;
 
     // ── Run State ─────────────────────────────────────────────────────────────
     public int currentAnte  = 1;
@@ -52,8 +58,8 @@ public class RunManager : MonoBehaviour
     /// <summary>
     /// Half-side of the unlocked square board area (for the 13×13 grid, half = 6).
     ///   radius 4 → centre  9×9  (cells 2–10)  — starting area
-    ///   radius 5 → centre 11×11 (cells 1–11)  — unlocks after Exam 3
-    ///   radius 6 → full   13×13 (cells 0–12)  — unlocks after Exam 6
+    ///   radius 5 → centre 11×11 (cells 1–11)  — unlocks after Exam 3 (Standard)
+    ///   radius 6 → full   13×13 (cells 0–12)  — unlocks after Exam 6 (Standard)
     /// </summary>
     public int unlockedRadius  { get; private set; } = 4;
     /// <summary>Total Exams cleared this run.</summary>
@@ -70,22 +76,28 @@ public class RunManager : MonoBehaviour
     }
 
     // ── Run Initialisation ───────────────────────────────────────────────────
-    public void StartRun()
+    public void StartRun(RunConfig config = null)
     {
-        currentAnte   = 1;
-        currentBlind  = 0;
-        lives         = MaxLives;
-        gold          = 0;
-        score         = 0;
+        ActiveConfig = config;
+
+        // Apply config values, falling back to Standard defaults when config is null.
+        MaxAntes          = config != null ? config.totalAntes      : 8;
+        MaxLexicon        = config != null ? config.maxLexiconSlots : 5;
+        lives             = config != null ? config.startingLives   : MaxLives;
+        gold              = config != null ? config.startingGold    : 0;
+        currentHandSize   = config != null ? config.startingHandSize: 7;
+        unlockedRadius    = config != null ? config.startingRadius  : 4;
+        isStarterPick     = config != null ? config.starterLexicon  : true;
+
+        currentAnte      = 1;
+        currentBlind     = 0;
+        score            = 0;
         totalWordsScored = 0;
         highestWordScore = 0;
-        isStarterPick    = true;
-        currentHandSize  = 7;
-        unlockedRadius   = 4;   // starts at 9×9 centre of 13×13; expands to 11×11 then full 13×13
         examsCleared     = 0;
         activeLexicon.Clear();
         scoredWordSet.Clear();
-        blindAssets   = Resources.LoadAll<BlindData>("Blinds");
+        blindAssets = Resources.LoadAll<BlindData>("Blinds");
         RollFeaturedLetter();
     }
 
@@ -98,10 +110,23 @@ public class RunManager : MonoBehaviour
     public int GetCurrentBlindTarget()
     {
         var data = GetCurrentBlindData();
-        if (data != null) return data.targetScore;
-        // Fallback formula if no asset found
-        int baseTarget = 100 * currentAnte * (currentBlind + 1);
-        return baseTarget;
+        int raw;
+        if (data != null)
+        {
+            raw = data.targetScore;
+        }
+        else
+        {
+            // Procedural fallback for antes beyond what assets cover (used by Infinite mode).
+            int baseTarget = 100 * currentAnte * (currentBlind + 1);
+            int antesOver8 = Mathf.Max(0, currentAnte - 8);
+            raw = Mathf.RoundToInt(baseTarget * Mathf.Pow(1.35f, antesOver8));
+        }
+
+        // scoreMultiplier > 1 means targets are divided (easier per blind) to compress run length.
+        float mult = ActiveConfig != null && ActiveConfig.scoreMultiplier > 0f
+            ? ActiveConfig.scoreMultiplier : 1f;
+        return Mathf.Max(1, Mathf.RoundToInt(raw / mult));
     }
 
     public int GetCurrentBlindGoldReward()
@@ -112,7 +137,8 @@ public class RunManager : MonoBehaviour
 
     // ── Progression ──────────────────────────────────────────────────────────
     /// <summary>
-    /// Advances to the next blind (or next ante). Returns false if the run is won.
+    /// Advances to the next blind (or next ante). Returns false if the run is won
+    /// (never returns false when infiniteMode is active).
     /// </summary>
     public bool AdvanceBlind()
     {
@@ -122,7 +148,8 @@ public class RunManager : MonoBehaviour
         {
             currentBlind = 0;
             currentAnte++;
-            if (currentAnte > MaxAntes) return false; // Victory!
+            bool infinite = ActiveConfig != null && ActiveConfig.infiniteMode;
+            if (!infinite && currentAnte > MaxAntes) return false; // Victory!
         }
         RollFeaturedLetter();
         return true;
@@ -130,7 +157,8 @@ public class RunManager : MonoBehaviour
 
     /// <summary>
     /// Awards post-Exam progression rewards. Called by GameManager after an Exam is cleared.
-    /// Hand grows +1 per Exam (cap 10). Board expands to 7×7 after Exam 3 and to 9×9 after Exam 6.
+    /// Hand grows +1 per Exam (cap 10). Board expands at the examsCleared thresholds defined
+    /// by the active RunConfig (Standard: {3,6}; Quick Run: {2,3}).
     /// Returns a <see cref="ProgressionRewards"/> struct describing exactly what changed.
     /// </summary>
     public ProgressionRewards OnExamCleared()
@@ -152,8 +180,9 @@ public class RunManager : MonoBehaviour
         }
         r.newHandSize = currentHandSize;
 
-        // Board: 5×5 → 7×7 at Exam 3,  7×7 → 9×9 at Exam 6
-        if (examsCleared == 3 || examsCleared == 6)
+        // Board: expand at the thresholds defined by the active RunConfig.
+        int[] expandAt = ActiveConfig?.boardExpandAtExams ?? new[] { 3, 6 };
+        if (unlockedRadius < 6 && expandAt.Contains(examsCleared))
         {
             unlockedRadius++;
             r.boardExpanded = true;

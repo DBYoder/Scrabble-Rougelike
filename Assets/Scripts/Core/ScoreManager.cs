@@ -101,21 +101,35 @@ public class ScoreManager : MonoBehaviour
 
                 int tc = tile.TotalChips;
 
-                // Cell letter modifiers (DL / TL)
-                if (cell.modifier == CellModifier.DoubleLetter)
+                // Cell letter modifiers (DL / TL) — consumed on first use (Scrabble rule).
+                // modifierUsed resets automatically when ClearGrid → InitGrid is called.
+                if (!cell.modifierUsed)
                 {
-                    tc *= 2;
-                    wr.bonusLabels.Add($"DL '{char.ToUpper(tile.Letter)}'×2");
-                }
-                else if (cell.modifier == CellModifier.TripleLetter)
-                {
-                    tc *= 3;
-                    wr.bonusLabels.Add($"TL '{char.ToUpper(tile.Letter)}'×3");
-                }
+                    if (cell.modifier == CellModifier.DoubleLetter)
+                    {
+                        tc *= 2;
+                        wr.bonusLabels.Add($"DL '{char.ToUpper(tile.Letter)}'×2");
+                        cell.modifierUsed = true;
+                    }
+                    else if (cell.modifier == CellModifier.TripleLetter)
+                    {
+                        tc *= 3;
+                        wr.bonusLabels.Add($"TL '{char.ToUpper(tile.Letter)}'×3");
+                        cell.modifierUsed = true;
+                    }
 
-                // Accumulate cell word multipliers (DW / TW)
-                if (cell.modifier == CellModifier.DoubleWord)   cellWordMult *= 2f;
-                else if (cell.modifier == CellModifier.TripleWord) cellWordMult *= 3f;
+                    // Accumulate cell word multipliers (DW / TW) — also first-use only
+                    if (cell.modifier == CellModifier.DoubleWord)
+                    {
+                        cellWordMult *= 2f;
+                        cell.modifierUsed = true;
+                    }
+                    else if (cell.modifier == CellModifier.TripleWord)
+                    {
+                        cellWordMult *= 3f;
+                        cell.modifierUsed = true;
+                    }
+                }
 
                 // Intersection: cell used by 2+ words → double that letter's chips (Confluence lexicon)
                 if (hasConfluence

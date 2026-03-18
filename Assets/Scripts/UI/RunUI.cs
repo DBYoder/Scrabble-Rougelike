@@ -37,7 +37,10 @@ public class RunUI : MonoBehaviour
         // Chapter + stage-within-chapter progress ("Chapter 2/8  ·  Test")
         string stageName = rm.currentBlind == 0 ? "Exercise" : rm.currentBlind == 1 ? "Test" : "Exam";
         Set(livesText, $"Drafts: {rm.lives}");
-        Set(anteText,  $"Chapter {rm.currentAnte} / {RunManager.MaxAntes}  ·  {stageName}");
+        string anteStr = rm.ActiveConfig?.infiniteMode == true
+            ? $"Chapter {rm.currentAnte}  ·  {stageName}"
+            : $"Chapter {rm.currentAnte} / {rm.MaxAntes}  ·  {stageName}";
+        Set(anteText, anteStr);
 
         if (featuredLetterText != null)
         {

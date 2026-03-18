@@ -40,10 +40,11 @@ public static class SceneBuilder
         var upgradeOptionPrefab = BuildUpgradeOptionPrefab();
         var wordTilePrefab      = BuildWordTilePrefab();
         var wordRowPrefab       = BuildWordRowPrefab();
+        var modeCardPrefab      = BuildModeCardPrefab();
 
         BuildScene(cellPrefab, tileCardPrefab, shopItemPrefab,
                    lexiconCardPrefab, upgradeOptionPrefab,
-                   wordTilePrefab, wordRowPrefab);
+                   wordTilePrefab, wordRowPrefab, modeCardPrefab);
     }
 
     // ── Wire Scene Only ───────────────────────────────────────────────────────
@@ -69,10 +70,11 @@ public static class SceneBuilder
         var upgradeOptionPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/UpgradeOption.prefab") ?? BuildUpgradeOptionPrefab();
         var wordTilePrefab      = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/WordTile.prefab")      ?? BuildWordTilePrefab();
         var wordRowPrefab       = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/WordRow.prefab")       ?? BuildWordRowPrefab();
+        var modeCardPrefab      = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/ModeCard.prefab")      ?? BuildModeCardPrefab();
 
         BuildScene(cellPrefab, tileCardPrefab, shopItemPrefab,
                    lexiconCardPrefab, upgradeOptionPrefab,
-                   wordTilePrefab, wordRowPrefab);
+                   wordTilePrefab, wordRowPrefab, modeCardPrefab);
     }
 
     // ── Create Missing Prefabs ────────────────────────────────────────────────
@@ -91,6 +93,7 @@ public static class SceneBuilder
         if (!PrefabExists("UpgradeOption")) BuildUpgradeOptionPrefab();
         if (!PrefabExists("WordTile"))      BuildWordTilePrefab();
         if (!PrefabExists("WordRow"))       BuildWordRowPrefab();
+        if (!PrefabExists("ModeCard"))      BuildModeCardPrefab();
         AssetDatabase.Refresh();
         Debug.Log("[SceneBuilder] Create Missing Prefabs done.");
     }
@@ -105,7 +108,7 @@ public static class SceneBuilder
         GameObject cellPrefab,          GameObject tileCardPrefab,
         GameObject shopItemPrefab,      GameObject lexiconCardPrefab,
         GameObject upgradeOptionPrefab, GameObject wordTilePrefab,
-        GameObject wordRowPrefab)
+        GameObject wordRowPrefab,       GameObject modeCardPrefab)
     {
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -169,15 +172,94 @@ public static class SceneBuilder
         var mainMenuGo = CreatePanel(canvasGo.transform, "MainMenuPanel",
                                      transparent: false, color: new Color(0.26f, 0.21f, 0.23f));
         StretchFull(mainMenuGo.GetComponent<RectTransform>());
-        AddVLG(mainMenuGo, 20, TextAnchor.MiddleCenter);
+        var mainMenuUI = mainMenuGo.AddComponent<MainMenuUI>();
 
-        AddLabel(mainMenuGo.transform, "TitleText",    "CROSSWORD ROGUELIKE",
-                 fontSize: 52, bold: true);
-        AddLabel(mainMenuGo.transform, "SubtitleText", "Build words. Build power.",
-                 fontSize: 24);
-        var startBtn  = AddButton(mainMenuGo.transform, "StartButton", "NEW RUN",
-                                  new Color(0.28f, 0.50f, 0.30f), width: 220, height: 60);
-        StyleButton(startBtn, ButtonType.Confirm);
+        // LandingScreen — VLG centred in screen: title / subtitle / buttons
+        var landingGo = new GameObject("LandingScreen", typeof(RectTransform));
+        landingGo.transform.SetParent(mainMenuGo.transform, false);
+        StretchFull(landingGo.GetComponent<RectTransform>());
+        var landingVlg = landingGo.AddComponent<VerticalLayoutGroup>();
+        landingVlg.spacing               = 16f;
+        landingVlg.childAlignment        = TextAnchor.MiddleCenter;
+        landingVlg.childForceExpandWidth  = false;
+        landingVlg.childForceExpandHeight = false;
+        landingVlg.childControlWidth      = false;
+        landingVlg.childControlHeight     = false;
+        landingVlg.padding               = new RectOffset(0, 0, 0, 0);
+
+        var titleTxt    = AddLabel(landingGo.transform, "TitleText",    "CROSSWORD ROGUELIKE", fontSize: 52, bold: true);
+        titleTxt.alignment = TextAnchor.MiddleCenter;
+        titleTxt.rectTransform.sizeDelta = new Vector2(460f, 64f);
+        var subtitleTxt = AddLabel(landingGo.transform, "SubtitleText", "Build words. Build power.", fontSize: 24);
+        subtitleTxt.alignment = TextAnchor.MiddleCenter;
+        subtitleTxt.rectTransform.sizeDelta = new Vector2(460f, 34f);
+
+        AddSpacer(landingGo.transform, 12f);
+
+        // Buttons in a horizontal row, centred below the text
+        var btnRowGo = new GameObject("ButtonRow", typeof(RectTransform));
+        btnRowGo.transform.SetParent(landingGo.transform, false);
+        btnRowGo.GetComponent<RectTransform>().sizeDelta = new Vector2(460f, 70f);
+        var brHlg = btnRowGo.AddComponent<HorizontalLayoutGroup>();
+        brHlg.spacing               = 20f;
+        brHlg.childAlignment        = TextAnchor.MiddleCenter;
+        brHlg.childForceExpandWidth  = false;
+        brHlg.childForceExpandHeight = false;
+        brHlg.childControlWidth      = false;
+        brHlg.childControlHeight     = false;
+        var brLe = btnRowGo.AddComponent<LayoutElement>();
+        brLe.preferredWidth  = 460f;
+        brLe.preferredHeight = 70f;
+
+        var newGameBtn  = AddButton(btnRowGo.transform, "NewGameButton",  "NEW GAME",
+                                    new Color(0.28f, 0.50f, 0.30f), width: 210, height: 60);
+        StyleButton(newGameBtn, ButtonType.Confirm);
+
+        var settingsBtn = AddButton(btnRowGo.transform, "SettingsButton", "SETTINGS",
+                                    new Color(0.35f, 0.35f, 0.35f), width: 210, height: 60);
+        StyleButton(settingsBtn, ButtonType.Secondary);
+
+        // ModeSelectScreen — mode cards + back
+        var modeSelectGo = new GameObject("ModeSelectScreen", typeof(RectTransform));
+        modeSelectGo.transform.SetParent(mainMenuGo.transform, false);
+        StretchFull(modeSelectGo.GetComponent<RectTransform>());
+        AddVLG(modeSelectGo, 24, TextAnchor.UpperCenter);
+        modeSelectGo.SetActive(false); // hidden until player clicks NEW GAME
+
+        AddLabel(modeSelectGo.transform, "ModeSelectTitle", "SELECT MODE",
+                 fontSize: 42, bold: true);
+        AddSpacer(modeSelectGo.transform, 10f);
+
+        // ModeCardsArea — horizontal row of mode cards
+        var modeCardsAreaGo = new GameObject("ModeCardsArea", typeof(RectTransform));
+        modeCardsAreaGo.transform.SetParent(modeSelectGo.transform, false);
+        var mcaRt = modeCardsAreaGo.GetComponent<RectTransform>();
+        mcaRt.sizeDelta = new Vector2(1200f, 380f);
+        var mcaHlg = modeCardsAreaGo.AddComponent<HorizontalLayoutGroup>();
+        mcaHlg.spacing              = 30f;
+        mcaHlg.childAlignment       = TextAnchor.MiddleCenter;
+        mcaHlg.childForceExpandWidth  = false;
+        mcaHlg.childForceExpandHeight = false;
+        mcaHlg.childControlWidth      = false;
+        mcaHlg.childControlHeight     = false;
+        // LayoutElement ensures the parent VLG allocates the correct height when the
+        // ModeCardsArea has no children yet (before runtime card instantiation).
+        var mcaLe = modeCardsAreaGo.AddComponent<LayoutElement>();
+        mcaLe.minHeight       = 380f;
+        mcaLe.preferredHeight = 380f;
+
+        var backBtn = AddButton(modeSelectGo.transform, "BackButton", "BACK",
+                                new Color(0.35f, 0.35f, 0.35f), width: 180, height: 50);
+        StyleButton(backBtn, ButtonType.Secondary);
+
+        // Wire MainMenuUI sub-screen refs
+        mainMenuUI.landingScreen     = landingGo;
+        mainMenuUI.modeSelectScreen  = modeSelectGo;
+        mainMenuUI.modeCardsParent   = modeCardsAreaGo.GetComponent<RectTransform>();
+        mainMenuUI.modeCardPrefab    = modeCardPrefab;
+
+        // startBtn kept as alias so Part D wiring below still compiles
+        var startBtn = newGameBtn;
 
         // ── GamePanel ─────────────────────────────────────────────────────────
         var gamePanelGo = CreatePanel(canvasGo.transform, "GamePanel",
@@ -201,8 +283,16 @@ public static class SceneBuilder
         gcRt.anchoredPosition = new Vector2(-80f, 72f); // centred between side panels + in play area
         gcRt.sizeDelta        = new Vector2(772f, 772f); // 764px grid + 4px breathing room each side
 
-        // HandArea — 130px strip above bottom
+        // HandArea — 130px strip above bottom, constrained to the play area (x=270..1490)
+        // so tiles appear centred under the grid rather than under the full screen width.
         var handArea = CreateStrip(gamePanelGo.transform, "HandArea", isTop: false, thickness: 130f);
+        {
+            var haRt = handArea.GetComponent<RectTransform>();
+            // Shrink from full-width to the play area between the side panels.
+            // offsetMin.x = 270 (left edge of play area), offsetMax.x = -430 (1920-1490=430 from right)
+            haRt.offsetMin = new Vector2(270f, 0f);
+            haRt.offsetMax = new Vector2(-430f, 130f);
+        }
         AddHLG(handArea, 6, TextAnchor.MiddleCenter);
         var tileHandUI = handArea.AddComponent<TileHandUI>();
 
@@ -249,7 +339,7 @@ public static class SceneBuilder
         abRt.anchorMin        = new Vector2(0.5f, 0f);
         abRt.anchorMax        = new Vector2(0.5f, 0f);
         abRt.pivot            = new Vector2(0.5f, 0f);
-        abRt.anchoredPosition = new Vector2(0f, 138f); // 130px hand + 8px gap
+        abRt.anchoredPosition = new Vector2(-80f, 138f); // match grid centre (x=880, screen centre=960)
         abRt.sizeDelta        = new Vector2(760f, 55f);
         var abHlg = actionBtns.AddComponent<HorizontalLayoutGroup>();
         abHlg.spacing               = 12;
@@ -340,25 +430,6 @@ public static class SceneBuilder
         var scoringPanelGo = CreatePanel(canvasGo.transform, "ScoringPanel", transparent: true);
         StretchFull(scoringPanelGo.GetComponent<RectTransform>());
 
-        // WordNameBanner — centered above the grid, briefly shown per-word during animation
-        var wordBannerGo = new GameObject("WordNameBanner", typeof(RectTransform));
-        wordBannerGo.transform.SetParent(scoringPanelGo.transform, false);
-        var wbRt = wordBannerGo.GetComponent<RectTransform>();
-        wbRt.anchorMin        = new Vector2(0.5f, 0.5f);
-        wbRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        wbRt.pivot            = new Vector2(0.5f, 0.5f);
-        wbRt.anchoredPosition = new Vector2(0f, 210f); // above grid centre
-        wbRt.sizeDelta        = new Vector2(520f, 90f);
-        wordBannerGo.AddComponent<Image>().color = new Color(0.20f, 0.16f, 0.18f, 0.90f);
-        // Text lives on a child GO — Image and Text must not share the same GameObject
-        // because both require CanvasRenderer which causes AddComponent<Text>() to return null.
-        var wordNameTxt = CreateText(wordBannerGo.transform, "WordNameText", "",
-                                     fontSize: 54, bold: true, alignment: TextAnchor.MiddleCenter);
-        wordNameTxt.color              = new Color(1f, 0.88f, 0.55f, 1f); // warm gold
-        wordNameTxt.horizontalOverflow = HorizontalWrapMode.Overflow;
-        wordNameTxt.verticalOverflow   = VerticalWrapMode.Overflow;
-        wordBannerGo.SetActive(false);
-
         // ScoreOverlay — left side panel (same position as the placement ScorePreview)
         var overlayGo = new GameObject("ScoreOverlay", typeof(RectTransform));
         overlayGo.transform.SetParent(scoringPanelGo.transform, false);
@@ -375,46 +446,6 @@ public static class SceneBuilder
         var totalScoreText  = AddLabel(overlayGo.transform, "TotalScore",  "0",     fontSize: 60, bold: true);
         var targetScoreText = AddLabel(overlayGo.transform, "TargetScore", "/ 100", fontSize: 24);
 
-        // Breakdown ScrollRect — shows per-word chip×mult=score details after animation
-        var breakdownScrollGo = new GameObject("BreakdownScroll", typeof(RectTransform));
-        breakdownScrollGo.transform.SetParent(overlayGo.transform, false);
-        var bsLe = breakdownScrollGo.AddComponent<LayoutElement>();
-        bsLe.preferredHeight = 180f;
-        bsLe.flexibleWidth   = 1f;
-        breakdownScrollGo.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.01f); // Mask needs graphic
-
-        var bsScroll = breakdownScrollGo.AddComponent<ScrollRect>();
-        bsScroll.horizontal        = false;
-        bsScroll.scrollSensitivity = 30f;
-
-        var bsViewport = new GameObject("Viewport", typeof(RectTransform));
-        bsViewport.transform.SetParent(breakdownScrollGo.transform, false);
-        var bsvRt = bsViewport.GetComponent<RectTransform>();
-        bsvRt.anchorMin = Vector2.zero; bsvRt.anchorMax = Vector2.one;
-        bsvRt.offsetMin = Vector2.zero; bsvRt.offsetMax = Vector2.zero;
-        bsViewport.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.01f);
-        bsViewport.AddComponent<Mask>().showMaskGraphic = false;
-
-        var bsContent = new GameObject("BreakdownText", typeof(RectTransform));
-        bsContent.transform.SetParent(bsViewport.transform, false);
-        var bscRt = bsContent.GetComponent<RectTransform>();
-        bscRt.anchorMin = new Vector2(0f, 1f); bscRt.anchorMax = new Vector2(1f, 1f);
-        bscRt.pivot     = new Vector2(0.5f, 1f);
-        bscRt.sizeDelta = Vector2.zero;
-        var bsTxt = bsContent.AddComponent<Text>();
-        bsTxt.font               = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        bsTxt.fontSize           = 15;
-        bsTxt.color              = Color.white;
-        bsTxt.alignment          = TextAnchor.UpperLeft;
-        bsTxt.supportRichText    = true;
-        bsTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
-        bsTxt.verticalOverflow   = VerticalWrapMode.Overflow;
-        var bsCsf = bsContent.AddComponent<ContentSizeFitter>();
-        bsCsf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        bsScroll.viewport = bsvRt;
-        bsScroll.content  = bscRt;
-        bsContent.SetActive(false); // hidden until animation completes
-
         var resultText  = AddLabel(overlayGo.transform, "ResultText",  "", fontSize: 38, bold: true);
         var continueBtn = AddButton(overlayGo.transform, "ContinueButton", "CONTINUE",
                                     new Color(0.28f, 0.50f, 0.30f), width: 200, height: 55);
@@ -422,12 +453,10 @@ public static class SceneBuilder
 
         // Wire ScoreUI
         var scoreUI = scoringPanelGo.AddComponent<ScoreUI>();
-        scoreUI.totalScoreText    = totalScoreText;
-        scoreUI.targetScoreText   = targetScoreText;
-        scoreUI.resultText        = resultText;
-        scoreUI.wordNameText      = wordNameTxt;
-        scoreUI.wordBreakdownText = bsTxt;
-        scoreUI.continueButton    = continueBtn.GetComponent<Button>();
+        scoreUI.totalScoreText  = totalScoreText;
+        scoreUI.targetScoreText = targetScoreText;
+        scoreUI.resultText      = resultText;
+        scoreUI.continueButton  = continueBtn.GetComponent<Button>();
         scoreUI.wordTilePrefab    = wordTilePrefab;
         scoreUI.wordRowPrefab     = wordRowPrefab;
 
@@ -737,7 +766,10 @@ public static class SceneBuilder
         gm.victoryStatsText         = victoryStats;
 
         // ── Part D — Persistent button listeners ─────────────────────────────
-        WireButton(startBtn.GetComponent<Button>(),       menuButtons, "StartRun");
+        // Landing screen
+        WireButton(startBtn.GetComponent<Button>(),       menuButtons, "ShowModeSelect");
+        WireButton(backBtn.GetComponent<Button>(),        menuButtons, "ShowLanding");
+        // Retry / play again pass ActiveConfig via MenuButtons.StartRun()
         WireButton(retryBtn.GetComponent<Button>(),       menuButtons, "StartRun");
         WireButton(playAgainBtn.GetComponent<Button>(),   menuButtons, "StartRun");
         WireButton(faceItBtn.GetComponent<Button>(),      menuButtons, "ProceedFromBossPreview");
@@ -993,6 +1025,96 @@ public static class SceneBuilder
         return SavePrefab(go, "WordRow");
     }
 
+    // ── ModeCard ──────────────────────────────────────────────────────────────
+    private static GameObject BuildModeCardPrefab()
+    {
+        // Root: fixed 300×360px card, entire card is the clickable button
+        var go = new GameObject("ModeCard", typeof(RectTransform));
+        var goRt = go.GetComponent<RectTransform>();
+        goRt.sizeDelta = new Vector2(300f, 360f);
+
+        var bg = go.AddComponent<Image>();
+        bg.color = _style != null ? _style.panelBgMid : new Color(0.41f, 0.35f, 0.37f);
+
+        // Button on root — entire card is clickable; no separate SELECT child
+        var cardBtn = go.AddComponent<Button>();
+        var cbCb    = new ColorBlock
+        {
+            normalColor      = Color.white,
+            highlightedColor = new Color(1f, 1f, 1f, 0.88f),
+            pressedColor     = new Color(0.85f, 0.85f, 0.85f, 1f),
+            selectedColor    = Color.white,
+            disabledColor    = new Color(0.78f, 0.78f, 0.78f, 0.5f),
+            colorMultiplier  = 1f,
+            fadeDuration     = 0.1f,
+        };
+        cardBtn.colors     = cbCb;
+        cardBtn.transition = Selectable.Transition.ColorTint;
+        cardBtn.targetGraphic = bg;
+
+        // VLG — controls child widths so text fills the card
+        var vlg = go.AddComponent<VerticalLayoutGroup>();
+        vlg.spacing               = 0;
+        vlg.childAlignment        = TextAnchor.UpperCenter;
+        vlg.childControlWidth      = true;
+        vlg.childControlHeight     = true;
+        vlg.childForceExpandWidth  = true;
+        vlg.childForceExpandHeight = false;
+        vlg.padding                = new RectOffset(16, 16, 0, 20);
+
+        var modeCardUI = go.AddComponent<ModeCardUI>();
+        modeCardUI.selectButton = cardBtn;   // whole card is the button
+
+        // AccentBar — 6px colour strip at top (no side padding, outside VLG padding)
+        var barGo  = new GameObject("AccentBar", typeof(RectTransform));
+        barGo.transform.SetParent(go.transform, false);
+        var barImg = barGo.AddComponent<Image>();
+        barImg.color = Color.white;
+        var barLe  = barGo.AddComponent<LayoutElement>();
+        barLe.minHeight       = 6f;
+        barLe.preferredHeight = 6f;
+        modeCardUI.accentBar  = barImg;
+
+        AddSpacer(go.transform, 20f);
+
+        // ModeName — single line, never wraps
+        var nameGo  = new GameObject("ModeNameText", typeof(RectTransform));
+        nameGo.transform.SetParent(go.transform, false);
+        var nameTxt = nameGo.AddComponent<Text>();
+        nameTxt.text              = "Mode";
+        nameTxt.fontSize          = 28;
+        nameTxt.fontStyle         = FontStyle.Bold;
+        nameTxt.alignment         = TextAnchor.MiddleCenter;
+        nameTxt.color             = Color.white;
+        nameTxt.font              = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        nameTxt.horizontalOverflow = HorizontalWrapMode.Overflow;
+        nameTxt.verticalOverflow   = VerticalWrapMode.Overflow;
+        var nameLe = nameGo.AddComponent<LayoutElement>();
+        nameLe.minHeight       = 40f;
+        nameLe.preferredHeight = 40f;
+        modeCardUI.modeNameText = nameTxt;
+
+        AddSpacer(go.transform, 10f);
+
+        // ModeDesc — word-wrapped body text
+        var descGo  = new GameObject("ModeDescText", typeof(RectTransform));
+        descGo.transform.SetParent(go.transform, false);
+        var descTxt = descGo.AddComponent<Text>();
+        descTxt.text              = "Description";
+        descTxt.fontSize          = 15;
+        descTxt.alignment         = TextAnchor.UpperCenter;
+        descTxt.color             = new Color(0.85f, 0.85f, 0.85f);
+        descTxt.font              = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        descTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
+        descTxt.verticalOverflow   = VerticalWrapMode.Overflow;
+        var descLe = descGo.AddComponent<LayoutElement>();
+        descLe.minHeight       = 160f;
+        descLe.preferredHeight = 160f;
+        modeCardUI.modeDescText = descTxt;
+
+        return SavePrefab(go, "ModeCard");
+    }
+
     // =========================================================================
     // LAYOUT / WIDGET HELPERS
     // =========================================================================
@@ -1184,6 +1306,16 @@ public static class SceneBuilder
         vlg.childForceExpandWidth  = true;
         vlg.childForceExpandHeight = false;
         vlg.padding = new RectOffset(12, 12, 12, 12);
+    }
+
+    // Add a fixed-height invisible spacer inside a layout group
+    private static void AddSpacer(Transform parent, float height)
+    {
+        var go = new GameObject("Spacer", typeof(RectTransform));
+        go.transform.SetParent(parent, false);
+        var le = go.AddComponent<LayoutElement>();
+        le.minHeight       = height;
+        le.preferredHeight = height;
     }
 
     // Create a Text child with optional anchor override

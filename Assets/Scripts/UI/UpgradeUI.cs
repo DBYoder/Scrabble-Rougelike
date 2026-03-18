@@ -69,7 +69,7 @@ public class UpgradeUI : MonoBehaviour
                 promptText.text = "Choose your starting Lexicon:";
             else
                 promptText.text = RunManager.Instance != null && !RunManager.Instance.CanAddLexicon()
-                    ? $"Lexicon full ({RunManager.MaxLexicon}/{RunManager.MaxLexicon}) — skip or sell in shop first."
+                    ? $"Lexicon full ({RunManager.Instance.MaxLexicon}/{RunManager.Instance.MaxLexicon}) — skip or sell in shop first."
                     : "Choose a Lexicon entry (free):";
         }
 

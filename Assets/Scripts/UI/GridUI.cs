@@ -1,4 +1,4 @@
-// GridUI.cs — Renders the 13×13 grid and handles click-to-place interaction.
+// GridUI.cs — Renders the dynamic 9×9–13×13 grid and handles click-to-place interaction.
 // Attach to a GameObject in the Game Panel. Assign cellPrefab and gridParent.
 // cellPrefab should have: Image (background), Button, and a child Text named "LetterText".
 using System.Collections.Generic;

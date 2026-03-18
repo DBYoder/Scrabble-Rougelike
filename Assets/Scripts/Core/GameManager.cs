@@ -141,10 +141,12 @@ public class GameManager : MonoBehaviour
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
-    public void StartRun()
+    public void StartRun(RunConfig config = null)
     {
-        RunManager.Instance.StartRun();
-        ChangeState(GameState.Upgrade); // Starter Lexicon pick before the first blind
+        RunManager.Instance.StartRun(config);
+        // Skip the starter Lexicon pick if the mode disables it.
+        bool skipUpgrade = config != null && (!config.starterLexicon || config.noUpgrades);
+        ChangeState(skipUpgrade ? GameState.Drawing : GameState.Upgrade);
     }
 
     /// <summary>Called by the Play Word button — validates newly placed tiles.
@@ -236,8 +238,10 @@ public class GameManager : MonoBehaviour
 
         if (passed)
         {
-            RunManager.Instance.EarnGold(RunManager.Instance.GetCurrentBlindGoldReward());
-            ChangeState(GameState.Shop);
+            bool skipShop = RunManager.Instance.ActiveConfig?.noShop ?? false;
+            if (!skipShop)
+                RunManager.Instance.EarnGold(RunManager.Instance.GetCurrentBlindGoldReward());
+            ChangeState(skipShop ? GameState.Upgrade : GameState.Shop);
         }
         else
         {
@@ -264,9 +268,13 @@ public class GameManager : MonoBehaviour
         bool hasMore = RunManager.Instance.AdvanceBlind();
         if (!hasMore)
         {
+            // infiniteMode never returns false from AdvanceBlind, so this is only Standard/QuickRun.
             ChangeState(GameState.Victory);
             return;
         }
+
+        // Skip Upgrade screen when the mode disables free picks.
+        bool skipUpgrade = RunManager.Instance.ActiveConfig?.noUpgrades ?? false;
 
         // Award post-Exam progression (hand growth and/or board expansion).
         // Board expansion takes effect when BuildGrid() is called on entering Placement.
@@ -401,6 +409,13 @@ public class GameManager : MonoBehaviour
 
     private void OnEnterUpgrade()
     {
+        // In noUpgrades mode, skip the upgrade screen entirely and advance immediately.
+        if ((RunManager.Instance.ActiveConfig?.noUpgrades ?? false)
+            && !RunManager.Instance.isStarterPick)
+        {
+            AdvanceBlind();
+            return;
+        }
         UpgradeUI.Instance?.ShowUpgradeOptions();
     }
 
@@ -410,8 +425,9 @@ public class GameManager : MonoBehaviour
         if (label == null || RunManager.Instance == null) return;
         var rm = RunManager.Instance;
         string stage = rm.currentBlind == 0 ? "Exercise" : rm.currentBlind == 1 ? "Test" : "Exam";
+        int displayMax = rm.ActiveConfig?.infiniteMode == true ? rm.currentAnte : rm.MaxAntes;
         label.text =
-            $"Chapter {rm.currentAnte} / {RunManager.MaxAntes}  ·  {stage}\n" +
+            $"Chapter {rm.currentAnte}" + (rm.ActiveConfig?.infiniteMode == true ? "" : $" / {displayMax}") + $"  ·  {stage}\n" +
             $"Words scored: {rm.totalWordsScored}\n" +
             $"Best word: {rm.highestWordScore} pts\n" +
             $"Lexicons: {rm.activeLexicon.Count}";

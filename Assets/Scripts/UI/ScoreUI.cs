@@ -22,9 +22,7 @@ public class ScoreUI : MonoBehaviour
     [Header("References — wired by SceneBuilder (all optional; auto-created if absent)")]
     public Text   totalScoreText;
     public Text   targetScoreText;
-    public Text   resultText;        // left-panel result — hidden in favour of centre result
-    public Text   wordNameText;      // unused in new flow; kept for SceneBuilder compat
-    public Text   wordBreakdownText; // unused in new flow; kept for SceneBuilder compat
+    public Text   resultText;        // left-panel result — fallback when _centreResultText is null
     public Button continueButton;
 
     [Header("Animation Timing")]
@@ -145,8 +143,6 @@ public class ScoreUI : MonoBehaviour
         // ── Reset ──────────────────────────────────────────────────────────────
         if (continueButton    != null) continueButton.gameObject.SetActive(false);
         if (resultText        != null) resultText.gameObject.SetActive(false);
-        if (wordNameText      != null) wordNameText.gameObject.SetActive(false);
-        if (wordBreakdownText != null) wordBreakdownText.gameObject.SetActive(false);
         if (_centreResultText != null) _centreResultText.gameObject.SetActive(false);
         ClearWordRows();
 

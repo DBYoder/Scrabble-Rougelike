@@ -4,11 +4,34 @@ using UnityEngine;
 
 public class MenuButtons : MonoBehaviour
 {
-    public void StartRun()
+    /// <summary>Set by ModeCardUI when the player clicks a mode card.</summary>
+    public RunConfig pendingConfig;
+
+    // ── Start Menu Navigation ─────────────────────────────────────────────────
+    public void ShowModeSelect()
     {
-        GameManager.Instance?.StartRun();
+        MainMenuUI.Instance?.ShowModeSelect();
     }
 
+    public void ShowLanding()
+    {
+        MainMenuUI.Instance?.ShowLanding();
+    }
+
+    // ── Run Start ─────────────────────────────────────────────────────────────
+    /// <summary>Starts a new run with the config selected on the mode-select screen.</summary>
+    public void StartRunWithConfig()
+    {
+        GameManager.Instance?.StartRun(pendingConfig);
+    }
+
+    /// <summary>Retries / plays again with the same mode config as the last run.</summary>
+    public void StartRun()
+    {
+        GameManager.Instance?.StartRun(RunManager.Instance?.ActiveConfig);
+    }
+
+    // ── In-Game ───────────────────────────────────────────────────────────────
     public void ReturnToMenu()
     {
         GameManager.Instance?.ChangeState(GameState.MainMenu);

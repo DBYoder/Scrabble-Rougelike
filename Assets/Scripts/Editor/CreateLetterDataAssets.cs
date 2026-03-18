@@ -83,7 +83,7 @@ public static class CreateLetterDataAssets
                 "OK");
     }
 
-    [MenuItem("Crossword/Create Lexicon Assets")]
+    [MenuItem("Crossword/Create Lexicon Assets (Set 1 — Original 10)")]
     public static void CreateLexiconAssets()
     {
         const string folder = "Assets/Resources/Lexicon";

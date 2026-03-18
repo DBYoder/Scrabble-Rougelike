@@ -7,7 +7,7 @@ using UnityEditor;
 
 public static class CreateLexiconAssets
 {
-    [MenuItem("Crossword/Create New Lexicon Assets")]
+    [MenuItem("Crossword/Create Lexicon Assets (Set 2 — Extended 9)")]
     public static void CreateNewLexiconAssets()
     {
         Create("Assets/Resources/Lexicon/Polysyllabic.asset",

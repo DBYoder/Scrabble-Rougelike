@@ -80,43 +80,46 @@ public class ShopUI : MonoBehaviour
         cardImg.color = new Color(0.26f, 0.21f, 0.23f); // dark mauve
 
         var cardLe = card.AddComponent<LayoutElement>();
-        cardLe.preferredWidth  = 180f;
-        cardLe.preferredHeight = 110f;
+        cardLe.minWidth       = 200f;
+        cardLe.preferredWidth  = 200f;
+        cardLe.minHeight       = 120f;
+        cardLe.preferredHeight = 120f;
 
         var vlg = card.AddComponent<VerticalLayoutGroup>();
-        vlg.spacing              = 4;
-        vlg.childAlignment       = TextAnchor.UpperCenter;
-        vlg.childControlWidth    = true;
-        vlg.childControlHeight   = false;
+        vlg.spacing               = 6;
+        vlg.childAlignment        = TextAnchor.UpperCenter;
+        vlg.childControlWidth     = true;
+        vlg.childControlHeight    = true;   // respect LayoutElement heights
         vlg.childForceExpandWidth  = true;
         vlg.childForceExpandHeight = false;
-        vlg.padding = new RectOffset(5, 5, 5, 5);
+        vlg.padding = new RectOffset(8, 8, 8, 8);
 
         // ── Name label ─────────────────────────────────────────────────────────
         var nameGo = new GameObject("LexName", typeof(RectTransform));
         nameGo.transform.SetParent(card.transform, false);
         var nameLe = nameGo.AddComponent<LayoutElement>();
-        nameLe.preferredHeight = 56f;
+        nameLe.minHeight       = 52f;
+        nameLe.preferredHeight = 52f;
         var nameTxt = nameGo.AddComponent<Text>();
         nameTxt.text               = lex.displayName;
         nameTxt.font               = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        nameTxt.fontSize           = 15;
+        nameTxt.fontSize           = 18;
         nameTxt.fontStyle          = FontStyle.Bold;
         nameTxt.color              = Color.white;
-        nameTxt.alignment          = TextAnchor.UpperCenter;
+        nameTxt.alignment          = TextAnchor.MiddleCenter;
         nameTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
         nameTxt.verticalOverflow   = VerticalWrapMode.Overflow;
-        nameTxt.resizeTextForBestFit = true;
-        nameTxt.resizeTextMinSize    = 10;
-        nameTxt.resizeTextMaxSize    = 15;
 
         // ── Sell button ────────────────────────────────────────────────────────
         var sellGo = new GameObject("SellButton", typeof(RectTransform));
         sellGo.transform.SetParent(card.transform, false);
-        sellGo.AddComponent<Image>().color = new Color(0.55f, 0.32f, 0.13f); // amber
+        var sellImg = sellGo.AddComponent<Image>();
+        sellImg.color = new Color(0.55f, 0.32f, 0.13f); // amber
         var sellBtn = sellGo.AddComponent<Button>();
+        sellBtn.targetGraphic = sellImg;
         var sellLe  = sellGo.AddComponent<LayoutElement>();
-        sellLe.preferredHeight = 36f;
+        sellLe.minHeight       = 38f;
+        sellLe.preferredHeight = 38f;
 
         var btnTxtGo = new GameObject("Text", typeof(RectTransform));
         btnTxtGo.transform.SetParent(sellGo.transform, false);
@@ -128,11 +131,11 @@ public class ShopUI : MonoBehaviour
         var btnTxt = btnTxtGo.AddComponent<Text>();
         btnTxt.text               = $"SELL  +{refund}g";
         btnTxt.font               = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        btnTxt.fontSize           = 14;
+        btnTxt.fontSize           = 15;
         btnTxt.fontStyle          = FontStyle.Bold;
         btnTxt.color              = Color.white;
         btnTxt.alignment          = TextAnchor.MiddleCenter;
-        btnTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
+        btnTxt.horizontalOverflow = HorizontalWrapMode.Overflow;
         btnTxt.verticalOverflow   = VerticalWrapMode.Overflow;
 
         // Wire click — sell the lexicon, then do a full refresh so blocked shop

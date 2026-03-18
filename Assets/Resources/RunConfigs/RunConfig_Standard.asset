@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e480fce1b033ffb4eb9687e0e8ab1cb2, type: 3}
+  m_Name: RunConfig_Standard
+  m_EditorClassIdentifier: Assembly-CSharp::RunConfig
+  modeName: Standard
+  modeDescription: The full roguelike experience. 8 chapters, full economy, all Lexicon
+    effects.
+  modeAccentColor: {r: 0.278, g: 0.435, b: 0.302, a: 1}
+  startingLives: 3
+  startingGold: 0
+  startingHandSize: 7
+  startingRadius: 4
+  maxLexiconSlots: 5
+  totalAntes: 8
+  scoreMultiplier: 1
+  boardExpandAtExams: 0300000006000000
+  noShop: 0
+  noUpgrades: 0
+  infiniteMode: 0
+  starterLexicon: 1
