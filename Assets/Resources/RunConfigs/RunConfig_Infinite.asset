@@ -23,8 +23,12 @@ MonoBehaviour:
   maxLexiconSlots: 5
   totalAntes: 2147483647
   scoreMultiplier: 1
-  boardExpandAtExams: 0300000006000000
+  boardExpandAtExams: 0100000002000000
   noShop: 0
   noUpgrades: 0
   infiniteMode: 1
   starterLexicon: 1
+  hasStartingLexicon: 0
+  startingLexiconEffect: 14
+  unlockKey: 
+  unlockHint: 

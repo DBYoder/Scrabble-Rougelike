@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RunConfig_Standard
   m_EditorClassIdentifier: Assembly-CSharp::RunConfig
   modeName: Standard
-  modeDescription: The full roguelike experience. 8 chapters, full economy, all Lexicon
+  modeDescription: The full roguelike experience. 6 chapters, full economy, all Lexicon
     effects.
   modeAccentColor: {r: 0.278, g: 0.435, b: 0.302, a: 1}
   startingLives: 3
@@ -21,10 +21,14 @@ MonoBehaviour:
   startingHandSize: 7
   startingRadius: 4
   maxLexiconSlots: 5
-  totalAntes: 8
+  totalAntes: 6
   scoreMultiplier: 1
-  boardExpandAtExams: 0300000006000000
+  boardExpandAtExams: 0100000002000000
   noShop: 0
   noUpgrades: 0
   infiniteMode: 0
   starterLexicon: 1
+  hasStartingLexicon: 0
+  startingLexiconEffect: 14
+  unlockKey: 
+  unlockHint: 

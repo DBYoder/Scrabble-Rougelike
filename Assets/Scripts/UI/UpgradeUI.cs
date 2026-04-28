@@ -28,6 +28,16 @@ public class UpgradeUI : MonoBehaviour
     {
         if (skipButton != null)
             skipButton.onClick.AddListener(SkipUpgrade);
+        // Widen direct-child Text labels to avoid wrapping at the default 400px preferredWidth.
+        // Only touches label GOs (root has a Text component); skips buttons (root has Image, no Text).
+        foreach (Transform child in transform)
+        {
+            if (child.GetComponent<Text>() != null)
+            {
+                var le = child.GetComponent<LayoutElement>();
+                if (le != null) le.preferredWidth = 1800f;
+            }
+        }
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -42,9 +52,13 @@ public class UpgradeUI : MonoBehaviour
         var available  = new List<LexiconWordData>(allLexicon);
         if (RunManager.Instance != null)
             available.RemoveAll(l => RunManager.Instance.activeLexicon.Contains(l));
+        // Filter to discovered tiers only
+        if (MetaProgressionManager.Instance != null)
+            available.RemoveAll(l => !MetaProgressionManager.Instance.IsDiscovered(l.effectType));
 
-        // Pick up to 3
-        int count = Mathf.Min(3, available.Count);
+        // Addendum index upgrade gives one extra choice
+        int baseChoices = 3 + (MetaProgressionManager.Instance?.UpgradeChoiceBonus ?? 0);
+        int count = Mathf.Min(baseChoices, available.Count);
         options = new LexiconWordData[count];
         for (int i = 0; i < count; i++)
         {
@@ -81,6 +95,13 @@ public class UpgradeUI : MonoBehaviour
         foreach (var opt in options)
         {
             var entry = Instantiate(upgradeOptionPrefab, upgradeOptionsParent);
+
+            // Override card appearance at runtime so existing prefabs get the updated look
+            var cardImg = entry.GetComponent<Image>();
+            if (cardImg != null) cardImg.color = new Color(0.40f, 0.32f, 0.36f);
+            var cardOl = entry.GetComponent<Outline>() ?? entry.AddComponent<Outline>();
+            cardOl.effectColor    = new Color(0.65f, 0.52f, 0.58f, 0.8f);
+            cardOl.effectDistance = new Vector2(2f, -2f);
 
             foreach (var t in entry.GetComponentsInChildren<Text>())
             {

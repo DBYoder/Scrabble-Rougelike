@@ -18,6 +18,16 @@ public class MenuButtons : MonoBehaviour
         MainMenuUI.Instance?.ShowLanding();
     }
 
+    public void ShowProfileSelect()
+    {
+        MainMenuUI.Instance?.ShowProfileSelect();
+    }
+
+    public void ShowIndex()
+    {
+        MainMenuUI.Instance?.ShowIndex();
+    }
+
     // ── Run Start ─────────────────────────────────────────────────────────────
     /// <summary>Starts a new run with the config selected on the mode-select screen.</summary>
     public void StartRunWithConfig()

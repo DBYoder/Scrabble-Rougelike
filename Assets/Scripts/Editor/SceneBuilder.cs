@@ -124,6 +124,10 @@ public static class SceneBuilder
         // EventSystem
         CreateEventSystem();
 
+        // MetaProgressionManager lives on its own persistent GameObject
+        var metaGo = new GameObject("MetaProgressionManager");
+        metaGo.AddComponent<MetaProgressionManager>();
+
         // GameManager object (holds all manager components)
         var gmGo = new GameObject("GameManager");
         var gm   = gmGo.AddComponent<GameManager>();
@@ -196,67 +200,142 @@ public static class SceneBuilder
 
         AddSpacer(landingGo.transform, 12f);
 
-        // Buttons in a horizontal row, centred below the text
+        // Buttons in a horizontal row, centred below the text (4 buttons)
         var btnRowGo = new GameObject("ButtonRow", typeof(RectTransform));
         btnRowGo.transform.SetParent(landingGo.transform, false);
-        btnRowGo.GetComponent<RectTransform>().sizeDelta = new Vector2(460f, 70f);
+        btnRowGo.GetComponent<RectTransform>().sizeDelta = new Vector2(640f, 70f);
         var brHlg = btnRowGo.AddComponent<HorizontalLayoutGroup>();
-        brHlg.spacing               = 20f;
+        brHlg.spacing               = 16f;
         brHlg.childAlignment        = TextAnchor.MiddleCenter;
         brHlg.childForceExpandWidth  = false;
         brHlg.childForceExpandHeight = false;
         brHlg.childControlWidth      = false;
         brHlg.childControlHeight     = false;
         var brLe = btnRowGo.AddComponent<LayoutElement>();
-        brLe.preferredWidth  = 460f;
+        brLe.preferredWidth  = 640f;
         brLe.preferredHeight = 70f;
 
-        var newGameBtn  = AddButton(btnRowGo.transform, "NewGameButton",  "NEW GAME",
-                                    new Color(0.28f, 0.50f, 0.30f), width: 210, height: 60);
+        var newGameBtn    = AddButton(btnRowGo.transform, "NewGameButton",    "NEW GAME",
+                                      new Color(0.28f, 0.50f, 0.30f), width: 140, height: 60);
         StyleButton(newGameBtn, ButtonType.Confirm);
 
-        var settingsBtn = AddButton(btnRowGo.transform, "SettingsButton", "SETTINGS",
-                                    new Color(0.35f, 0.35f, 0.35f), width: 210, height: 60);
+        var scholarsBtn   = AddButton(btnRowGo.transform, "ScholarsButton",   "SCHOLARS",
+                                      new Color(0.40f, 0.30f, 0.20f), width: 140, height: 60);
+        StyleButton(scholarsBtn, ButtonType.Secondary);
+
+        var indexBtn      = AddButton(btnRowGo.transform, "IndexButton",      "THE INDEX",
+                                      new Color(0.35f, 0.28f, 0.45f), width: 140, height: 60);
+        StyleButton(indexBtn, ButtonType.Secondary);
+
+        var settingsBtn   = AddButton(btnRowGo.transform, "SettingsButton",   "SETTINGS",
+                                      new Color(0.35f, 0.35f, 0.35f), width: 140, height: 60);
         StyleButton(settingsBtn, ButtonType.Secondary);
 
-        // ModeSelectScreen — mode cards + back
+        // ModeSelectScreen — centered column, cards + back
         var modeSelectGo = new GameObject("ModeSelectScreen", typeof(RectTransform));
         modeSelectGo.transform.SetParent(mainMenuGo.transform, false);
         StretchFull(modeSelectGo.GetComponent<RectTransform>());
-        AddVLG(modeSelectGo, 24, TextAnchor.UpperCenter);
-        modeSelectGo.SetActive(false); // hidden until player clicks NEW GAME
+        modeSelectGo.SetActive(false);
 
-        AddLabel(modeSelectGo.transform, "ModeSelectTitle", "SELECT MODE",
-                 fontSize: 42, bold: true);
-        AddSpacer(modeSelectGo.transform, 10f);
+        var msCol = MakeCenterColumn(modeSelectGo.transform, colWidth: 1020f, colHeight: 640f);
+        var modeCardsAreaGo = BuildCardScreen(msCol.transform, "SELECT MODE",
+                                              out var backBtn, out _);
 
-        // ModeCardsArea — horizontal row of mode cards
-        var modeCardsAreaGo = new GameObject("ModeCardsArea", typeof(RectTransform));
-        modeCardsAreaGo.transform.SetParent(modeSelectGo.transform, false);
-        var mcaRt = modeCardsAreaGo.GetComponent<RectTransform>();
-        mcaRt.sizeDelta = new Vector2(1200f, 380f);
-        var mcaHlg = modeCardsAreaGo.AddComponent<HorizontalLayoutGroup>();
-        mcaHlg.spacing              = 30f;
-        mcaHlg.childAlignment       = TextAnchor.MiddleCenter;
-        mcaHlg.childForceExpandWidth  = false;
-        mcaHlg.childForceExpandHeight = false;
-        mcaHlg.childControlWidth      = false;
-        mcaHlg.childControlHeight     = false;
-        // LayoutElement ensures the parent VLG allocates the correct height when the
-        // ModeCardsArea has no children yet (before runtime card instantiation).
-        var mcaLe = modeCardsAreaGo.AddComponent<LayoutElement>();
-        mcaLe.minHeight       = 380f;
-        mcaLe.preferredHeight = 380f;
+        // ProfileSelectScreen — centered column, scholar cards + back
+        var profileSelectGo = new GameObject("ProfileSelectScreen", typeof(RectTransform));
+        profileSelectGo.transform.SetParent(mainMenuGo.transform, false);
+        StretchFull(profileSelectGo.GetComponent<RectTransform>());
+        profileSelectGo.SetActive(false);
 
-        var backBtn = AddButton(modeSelectGo.transform, "BackButton", "BACK",
-                                new Color(0.35f, 0.35f, 0.35f), width: 180, height: 50);
-        StyleButton(backBtn, ButtonType.Secondary);
+        var psCol = MakeCenterColumn(profileSelectGo.transform, colWidth: 1350f, colHeight: 640f);
+        var profileCardsAreaGo = BuildCardScreen(psCol.transform, "SCHOLAR PROFILES",
+                                                 out var profBackBtn, out _);
+
+        // ── IndexScreen (The Index — between-run upgrade shop) ────────────────
+        var indexScreenGo = new GameObject("IndexScreen", typeof(RectTransform));
+        indexScreenGo.transform.SetParent(mainMenuGo.transform, false);
+        StretchFull(indexScreenGo.GetComponent<RectTransform>());
+        var ixVlg = indexScreenGo.AddComponent<VerticalLayoutGroup>();
+        ixVlg.spacing               = 12f;
+        ixVlg.childAlignment        = TextAnchor.UpperCenter;
+        ixVlg.childForceExpandWidth  = true;
+        ixVlg.childForceExpandHeight = false;
+        ixVlg.childControlWidth     = true;
+        ixVlg.childControlHeight    = false;
+        ixVlg.padding               = new RectOffset(24, 24, 62, 20);
+
+        var ixTitle = AddLabel(indexScreenGo.transform, "IndexTitle", "THE INDEX", fontSize: 48, bold: true);
+        ixTitle.GetComponent<LayoutElement>().preferredWidth = 1800f;
+
+        var ixSubtitle = AddLabel(indexScreenGo.transform, "IndexSubtitle",
+                                  "Spend Folios on permanent upgrades.", fontSize: 20);
+        ixSubtitle.color = new Color(0.80f, 0.76f, 0.78f);
+        ixSubtitle.GetComponent<LayoutElement>().preferredWidth = 1800f;
+
+        var ixFolios = AddLabel(indexScreenGo.transform, "FolioCount", "Folios: 0", fontSize: 28, bold: true);
+        ixFolios.color = new Color(0.97f, 0.88f, 0.40f); // gold
+        ixFolios.GetComponent<LayoutElement>().preferredWidth = 1800f;
+
+        AddSpacer(indexScreenGo.transform, 8f);
+
+        // Upgrade list — ScrollRect wrapping a VLG content area
+        var ixScrollGo = new GameObject("UpgradeScroll", typeof(RectTransform));
+        ixScrollGo.transform.SetParent(indexScreenGo.transform, false);
+        var ixScrollLe = ixScrollGo.AddComponent<LayoutElement>();
+        ixScrollLe.preferredHeight = 640f;
+        ixScrollLe.flexibleHeight  = 1f;
+        var ixScrollRect = ixScrollGo.AddComponent<ScrollRect>();
+        ixScrollRect.horizontal = false;
+        ixScrollRect.vertical   = true;
+        ixScrollRect.scrollSensitivity = 40f;
+
+        var ixViewportGo = new GameObject("Viewport", typeof(RectTransform));
+        ixViewportGo.transform.SetParent(ixScrollGo.transform, false);
+        StretchFull(ixViewportGo.GetComponent<RectTransform>());
+        ixViewportGo.AddComponent<Image>().color = new Color(0, 0, 0, 0);
+        ixViewportGo.AddComponent<Mask>().showMaskGraphic = false;
+
+        var ixListGo = new GameObject("UpgradeList", typeof(RectTransform));
+        ixListGo.transform.SetParent(ixViewportGo.transform, false);
+        var ixListRt = ixListGo.GetComponent<RectTransform>();
+        ixListRt.anchorMin = new Vector2(0, 1);
+        ixListRt.anchorMax = new Vector2(1, 1);
+        ixListRt.pivot     = new Vector2(0.5f, 1f);
+        ixListRt.offsetMin = Vector2.zero;
+        ixListRt.offsetMax = Vector2.zero;
+        var ixListCsf = ixListGo.AddComponent<ContentSizeFitter>();
+        ixListCsf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        var ixListVlg = ixListGo.AddComponent<VerticalLayoutGroup>();
+        ixListVlg.spacing               = 10f;
+        ixListVlg.childAlignment        = TextAnchor.UpperCenter;
+        ixListVlg.childForceExpandWidth  = true;
+        ixListVlg.childForceExpandHeight = false;
+        ixListVlg.childControlWidth     = true;
+        ixListVlg.childControlHeight    = false;
+
+        ixScrollRect.viewport = ixViewportGo.GetComponent<RectTransform>();
+        ixScrollRect.content  = ixListRt;
+
+        var ixBackBtn = AddButton(indexScreenGo.transform, "IndexBackButton", "← BACK",
+                                  new Color(0.35f, 0.35f, 0.35f), width: 180, height: 54);
+        StyleButton(ixBackBtn, ButtonType.Secondary);
+
+        var indexUI = indexScreenGo.AddComponent<IndexUI>();
+        indexUI.folioCountText     = ixFolios;
+        indexUI.upgradeListParent  = ixListGo.transform;
+        indexUI.closeButton        = ixBackBtn.GetComponent<Button>();
+
+        indexScreenGo.SetActive(false); // hidden by default
 
         // Wire MainMenuUI sub-screen refs
-        mainMenuUI.landingScreen     = landingGo;
-        mainMenuUI.modeSelectScreen  = modeSelectGo;
-        mainMenuUI.modeCardsParent   = modeCardsAreaGo.GetComponent<RectTransform>();
-        mainMenuUI.modeCardPrefab    = modeCardPrefab;
+        mainMenuUI.landingScreen      = landingGo;
+        mainMenuUI.modeSelectScreen   = modeSelectGo;
+        mainMenuUI.profileSelectScreen = profileSelectGo;
+        mainMenuUI.indexScreen        = indexScreenGo;
+        mainMenuUI.indexUI            = indexUI;
+        mainMenuUI.modeCardsParent    = modeCardsAreaGo.GetComponent<RectTransform>();
+        mainMenuUI.profileCardsParent = profileCardsAreaGo.GetComponent<RectTransform>();
+        mainMenuUI.modeCardPrefab     = modeCardPrefab;
 
         // startBtn kept as alias so Part D wiring below still compiles
         var startBtn = newGameBtn;
@@ -500,6 +579,8 @@ public static class SceneBuilder
                                       transparent: false, color: new Color(0.26f, 0.21f, 0.23f));
         StretchFull(shopPanelGo.GetComponent<RectTransform>());
         AddVLG(shopPanelGo, 16, TextAnchor.UpperCenter);
+        // Push content below the 50px TopBar (50 + 12 default side margin = 62px top padding)
+        shopPanelGo.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(12, 12, 62, 12);
 
         AddLabel(shopPanelGo.transform, "ShopTitle", "SHOP", fontSize: 48, bold: true);
         var shopGoldText = AddLabel(shopPanelGo.transform, "GoldText", "Gold: 0", fontSize: 28);
@@ -516,6 +597,7 @@ public static class SceneBuilder
                                     "YOUR LEXICONS  —  sell any card for a partial gold refund",
                                     fontSize: 18);
         yourLexLabel.color = new Color(0.78f, 0.67f, 0.90f); // soft lilac
+        yourLexLabel.GetComponent<LayoutElement>().preferredWidth = 1800f;
 
         var yourLexArea = new GameObject("YourLexiconsArea", typeof(RectTransform));
         yourLexArea.transform.SetParent(shopPanelGo.transform, false);
@@ -547,13 +629,21 @@ public static class SceneBuilder
                                          transparent: false, color: new Color(0.26f, 0.21f, 0.23f));
         StretchFull(upgradePanelGo.GetComponent<RectTransform>());
         AddVLG(upgradePanelGo, 16, TextAnchor.UpperCenter);
+        // Push content below the 50px TopBar
+        upgradePanelGo.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(12, 12, 62, 12);
 
-        AddLabel(upgradePanelGo.transform, "UpgradeTitle", "LEXICON UPGRADE", fontSize: 48, bold: true);
+        // Wide preferredWidth so labels fill the panel instead of capping at the default 400px.
+        // Do NOT use childControlWidth=true on the VLG — that would also stretch the skip button.
+        var upgradeTitle = AddLabel(upgradePanelGo.transform, "UpgradeTitle", "LEXICON UPGRADE", fontSize: 48, bold: true);
+        upgradeTitle.GetComponent<LayoutElement>().preferredWidth = 1800f;
         var upgradePromptText = AddLabel(upgradePanelGo.transform, "PromptText", "Choose a Lexicon entry (free):", fontSize: 24);
+        upgradePromptText.GetComponent<LayoutElement>().preferredWidth = 1800f;
 
         var upgradeOptionsArea = new GameObject("UpgradeOptionsArea", typeof(RectTransform));
         upgradeOptionsArea.transform.SetParent(upgradePanelGo.transform, false);
         upgradeOptionsArea.GetComponent<RectTransform>().sizeDelta = new Vector2(1400f, 420f);
+        var oaLE = upgradeOptionsArea.AddComponent<LayoutElement>();
+        oaLE.preferredHeight = 420f;
         AddHLG(upgradeOptionsArea, 40, TextAnchor.MiddleCenter);
         upgradeOptionsArea.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(20, 20, 10, 10);
 
@@ -617,8 +707,10 @@ public static class SceneBuilder
         bpHeader.color = _style != null ? _style.btnDanger : new Color(0.58f, 0.25f, 0.29f);
 
         var bpModName = AddLabel(bossPreviewGo.transform, "ModifierName", "", fontSize: 32, bold: true);
+        bpModName.GetComponent<LayoutElement>().preferredWidth = 900f;
         var bpModDesc = AddLabel(bossPreviewGo.transform, "ModifierDesc", "", fontSize: 20);
         bpModDesc.color = new Color(0.85f, 0.80f, 0.80f);
+        bpModDesc.GetComponent<LayoutElement>().preferredWidth = 900f;
         var bpAnteBlind = AddLabel(bossPreviewGo.transform, "AnteBlindText", "", fontSize: 18);
         bpAnteBlind.color = _style != null ? _style.lexiconLabel : new Color(0.784f, 0.698f, 0.902f);
 
@@ -637,24 +729,25 @@ public static class SceneBuilder
         var progRewardGo = new GameObject("ProgressionRewardPanel", typeof(RectTransform));
         progRewardGo.transform.SetParent(canvasGo.transform, false);
         var prRt = progRewardGo.GetComponent<RectTransform>();
-        prRt.anchorMin = new Vector2(0.30f, 0.30f);
-        prRt.anchorMax = new Vector2(0.70f, 0.70f);
+        prRt.anchorMin = new Vector2(0.25f, 0.25f);
+        prRt.anchorMax = new Vector2(0.75f, 0.75f);
         prRt.offsetMin = Vector2.zero;
         prRt.offsetMax = Vector2.zero;
         progRewardGo.AddComponent<Image>().color = _style != null
             ? _style.panelBg
             : new Color(0.18f, 0.14f, 0.16f); // dark mauve
         progRewardGo.AddComponent<CanvasGroup>();
-        AddVLG(progRewardGo, 18, TextAnchor.MiddleCenter);
+        AddVLG(progRewardGo, 18, TextAnchor.UpperCenter);
 
         // Header — golden
         var prHeader = AddLabel(progRewardGo.transform, "RewardHeader", "CHAPTER CLEARED!",
                                 fontSize: 40, bold: true);
         prHeader.color = new Color(0.97f, 0.88f, 0.40f); // gold
 
-        // Reward body — white, multi-line, hand + board growth details
+        // Reward body — white, multi-line. Give enough height for 3-4 lines.
         var prBody = AddLabel(progRewardGo.transform, "RewardText", "", fontSize: 24);
         prBody.color = new Color(0.92f, 0.92f, 0.88f);
+        prBody.GetComponent<LayoutElement>().preferredHeight = 120f;
 
         // Continue button
         var onwardBtn = AddButton(progRewardGo.transform, "OnwardButton", "ONWARD",
@@ -767,8 +860,12 @@ public static class SceneBuilder
 
         // ── Part D — Persistent button listeners ─────────────────────────────
         // Landing screen
-        WireButton(startBtn.GetComponent<Button>(),       menuButtons, "ShowModeSelect");
-        WireButton(backBtn.GetComponent<Button>(),        menuButtons, "ShowLanding");
+        WireButton(startBtn.GetComponent<Button>(),          menuButtons, "ShowModeSelect");
+        WireButton(scholarsBtn.GetComponent<Button>(),       menuButtons, "ShowProfileSelect");
+        WireButton(indexBtn.GetComponent<Button>(),          menuButtons, "ShowIndex");
+        WireButton(ixBackBtn.GetComponent<Button>(),         menuButtons, "ShowLanding");
+        WireButton(backBtn.GetComponent<Button>(),           menuButtons, "ShowLanding");
+        WireButton(profBackBtn.GetComponent<Button>(),       menuButtons, "ShowLanding");
         // Retry / play again pass ActiveConfig via MenuButtons.StartRun()
         WireButton(retryBtn.GetComponent<Button>(),       menuButtons, "StartRun");
         WireButton(playAgainBtn.GetComponent<Button>(),   menuButtons, "StartRun");
@@ -952,7 +1049,11 @@ public static class SceneBuilder
         go.GetComponent<RectTransform>().sizeDelta = new Vector2(400f, 400f);
 
         var img = go.AddComponent<Image>();
-        img.color = new Color(0.26f, 0.21f, 0.23f); // medium dark mauve
+        img.color = new Color(0.40f, 0.32f, 0.36f); // lighter mauve — distinct from panel background
+
+        var ol = go.AddComponent<Outline>();
+        ol.effectColor    = new Color(0.65f, 0.52f, 0.58f, 0.8f);
+        ol.effectDistance = new Vector2(2f, -2f);
 
         go.AddComponent<Button>();
 
@@ -1062,6 +1163,13 @@ public static class SceneBuilder
         vlg.childForceExpandHeight = false;
         vlg.padding                = new RectOffset(16, 16, 0, 20);
 
+        // LayoutElement tells any parent layout group this card is 300×360
+        var cardLe = go.AddComponent<LayoutElement>();
+        cardLe.preferredWidth  = 300f;
+        cardLe.preferredHeight = 360f;
+        cardLe.minWidth        = 300f;
+        cardLe.minHeight       = 360f;
+
         var modeCardUI = go.AddComponent<ModeCardUI>();
         modeCardUI.selectButton = cardBtn;   // whole card is the button
 
@@ -1075,42 +1183,66 @@ public static class SceneBuilder
         barLe.preferredHeight = 6f;
         modeCardUI.accentBar  = barImg;
 
-        AddSpacer(go.transform, 20f);
+        AddSpacer(go.transform, 16f);
 
-        // ModeName — single line, never wraps
+        // ModeName — wraps so long names don't bleed out of card
         var nameGo  = new GameObject("ModeNameText", typeof(RectTransform));
         nameGo.transform.SetParent(go.transform, false);
         var nameTxt = nameGo.AddComponent<Text>();
-        nameTxt.text              = "Mode";
-        nameTxt.fontSize          = 28;
-        nameTxt.fontStyle         = FontStyle.Bold;
-        nameTxt.alignment         = TextAnchor.MiddleCenter;
-        nameTxt.color             = Color.white;
-        nameTxt.font              = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        nameTxt.horizontalOverflow = HorizontalWrapMode.Overflow;
+        nameTxt.text               = "Mode";
+        nameTxt.fontSize           = 24;
+        nameTxt.fontStyle          = FontStyle.Bold;
+        nameTxt.alignment          = TextAnchor.MiddleCenter;
+        nameTxt.color              = Color.white;
+        nameTxt.font               = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        nameTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
         nameTxt.verticalOverflow   = VerticalWrapMode.Overflow;
         var nameLe = nameGo.AddComponent<LayoutElement>();
-        nameLe.minHeight       = 40f;
-        nameLe.preferredHeight = 40f;
+        nameLe.minHeight       = 56f;   // tall enough for two wrapped lines
+        nameLe.preferredHeight = 56f;
         modeCardUI.modeNameText = nameTxt;
 
-        AddSpacer(go.transform, 10f);
+        AddSpacer(go.transform, 8f);
 
         // ModeDesc — word-wrapped body text
         var descGo  = new GameObject("ModeDescText", typeof(RectTransform));
         descGo.transform.SetParent(go.transform, false);
         var descTxt = descGo.AddComponent<Text>();
-        descTxt.text              = "Description";
-        descTxt.fontSize          = 15;
-        descTxt.alignment         = TextAnchor.UpperCenter;
-        descTxt.color             = new Color(0.85f, 0.85f, 0.85f);
-        descTxt.font              = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        descTxt.text               = "Description";
+        descTxt.fontSize           = 14;
+        descTxt.alignment          = TextAnchor.UpperCenter;
+        descTxt.color              = new Color(0.85f, 0.85f, 0.85f);
+        descTxt.font               = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         descTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
         descTxt.verticalOverflow   = VerticalWrapMode.Overflow;
         var descLe = descGo.AddComponent<LayoutElement>();
-        descLe.minHeight       = 160f;
-        descLe.preferredHeight = 160f;
+        descLe.minHeight       = 120f;
+        descLe.preferredHeight = 120f;
         modeCardUI.modeDescText = descTxt;
+
+        // Flexible spacer — pushes status label to the bottom
+        var flexSpacer = new GameObject("FlexSpacer", typeof(RectTransform));
+        flexSpacer.transform.SetParent(go.transform, false);
+        var flexLe = flexSpacer.AddComponent<LayoutElement>();
+        flexLe.minHeight      = 0f;
+        flexLe.flexibleHeight = 1f;
+
+        // StatusText — "LOCKED" badge, anchored at bottom of card
+        var statusGo  = new GameObject("StatusText", typeof(RectTransform));
+        statusGo.transform.SetParent(go.transform, false);
+        var statusTxt = statusGo.AddComponent<Text>();
+        statusTxt.text               = "LOCKED";
+        statusTxt.fontSize           = 16;
+        statusTxt.fontStyle          = FontStyle.Bold;
+        statusTxt.alignment          = TextAnchor.MiddleCenter;
+        statusTxt.color              = new Color(0.70f, 0.45f, 0.45f);
+        statusTxt.font               = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        statusTxt.horizontalOverflow = HorizontalWrapMode.Overflow;
+        statusTxt.verticalOverflow   = VerticalWrapMode.Overflow;
+        var statusLe = statusGo.AddComponent<LayoutElement>();
+        statusLe.minHeight       = 28f;
+        statusLe.preferredHeight = 28f;
+        modeCardUI.statusText = statusTxt;
 
         return SavePrefab(go, "ModeCard");
     }
@@ -1295,6 +1427,95 @@ public static class SceneBuilder
         hlg.childControlWidth      = false; // don't override child RectTransform sizes
         hlg.childControlHeight     = false;
         hlg.padding = new RectOffset(8, 8, 4, 4);
+    }
+
+    // Centered fixed-size column anchored to the canvas centre.
+    // Children sized/centred by a VLG with childControlWidth=true, childForceExpandWidth=false.
+    private static GameObject MakeCenterColumn(Transform parent, float colWidth, float colHeight)
+    {
+        var go = new GameObject("ContentColumn", typeof(RectTransform));
+        go.transform.SetParent(parent, false);
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot     = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(colWidth, colHeight);
+
+        var vlg = go.AddComponent<VerticalLayoutGroup>();
+        vlg.spacing               = 24f;
+        vlg.childAlignment        = TextAnchor.UpperCenter;
+        vlg.childControlWidth     = true;
+        vlg.childForceExpandWidth = false;
+        vlg.childControlHeight    = true;
+        vlg.childForceExpandHeight = false;
+        vlg.padding               = new RectOffset(0, 0, 40, 40);
+        return go;
+    }
+
+    // Builds the interior of a mode/profile select screen inside a centred column.
+    // Returns the cards-area container; outputs the back button and settings button GOs.
+    private static GameObject BuildCardScreen(Transform col, string title,
+                                              out GameObject backBtnGo,
+                                              out GameObject _unused)
+    {
+        // Title
+        var titleGo = new GameObject("Title", typeof(RectTransform));
+        titleGo.transform.SetParent(col, false);
+        var titleLe = titleGo.AddComponent<LayoutElement>();
+        titleLe.preferredWidth  = 700f;
+        titleLe.preferredHeight = 56f;
+        var titleTxt = titleGo.AddComponent<Text>();
+        titleTxt.text               = title;
+        titleTxt.font               = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        titleTxt.fontSize           = 42;
+        titleTxt.fontStyle          = FontStyle.Bold;
+        titleTxt.color              = Color.white;
+        titleTxt.alignment          = TextAnchor.MiddleCenter;
+        titleTxt.horizontalOverflow = HorizontalWrapMode.Overflow;
+        titleTxt.verticalOverflow   = VerticalWrapMode.Overflow;
+
+        // Cards row — width is computed at runtime from spawned cards via HLG
+        var cardsGo = new GameObject("CardsArea", typeof(RectTransform));
+        cardsGo.transform.SetParent(col, false);
+        var cardsHlg = cardsGo.AddComponent<HorizontalLayoutGroup>();
+        cardsHlg.spacing               = 30f;
+        cardsHlg.childAlignment        = TextAnchor.MiddleCenter;
+        cardsHlg.childForceExpandWidth  = false;
+        cardsHlg.childForceExpandHeight = false;
+        cardsHlg.childControlWidth      = false;
+        cardsHlg.childControlHeight     = false;
+        var cardsLe = cardsGo.AddComponent<LayoutElement>();
+        cardsLe.preferredHeight = 380f;
+        // preferredWidth intentionally left at -1 so parent VLG reads HLG's computed width
+
+        // Back button — parent VLG sizes this to its LayoutElement.preferredWidth (160px)
+        backBtnGo = new GameObject("BackButton", typeof(RectTransform));
+        backBtnGo.transform.SetParent(col, false);
+        var backLe = backBtnGo.AddComponent<LayoutElement>();
+        backLe.preferredWidth  = 160f;
+        backLe.preferredHeight = 50f;
+        var backImg = backBtnGo.AddComponent<Image>();
+        backImg.color = new Color(0.35f, 0.35f, 0.35f);
+        if (_style != null) backImg.color = _style.btnSecondary;
+        var backBtn = backBtnGo.AddComponent<Button>();
+        backBtn.targetGraphic = backImg;
+        var backTxtGo = new GameObject("Text", typeof(RectTransform));
+        backTxtGo.transform.SetParent(backBtnGo.transform, false);
+        var backTxtRt = backTxtGo.GetComponent<RectTransform>();
+        backTxtRt.anchorMin = Vector2.zero; backTxtRt.anchorMax = Vector2.one;
+        backTxtRt.offsetMin = Vector2.zero; backTxtRt.offsetMax = Vector2.zero;
+        var backTxt = backTxtGo.AddComponent<Text>();
+        backTxt.text               = "BACK";
+        backTxt.font               = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        backTxt.fontSize           = 22;
+        backTxt.fontStyle          = FontStyle.Bold;
+        backTxt.color              = Color.white;
+        backTxt.alignment          = TextAnchor.MiddleCenter;
+        backTxt.horizontalOverflow = HorizontalWrapMode.Overflow;
+        backTxt.verticalOverflow   = VerticalWrapMode.Overflow;
+
+        _unused = null;
+        return cardsGo;
     }
 
     // Add VerticalLayoutGroup to an existing GameObject

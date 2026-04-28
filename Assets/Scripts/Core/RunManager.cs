@@ -40,9 +40,11 @@ public class RunManager : MonoBehaviour
     // ── Lexicon ───────────────────────────────────────────────────────────────
     public List<LexiconWordData> activeLexicon = new List<LexiconWordData>();
 
-    // ── Neologism Tracking ────────────────────────────────────────────────────
+    // ── Word Tracking ─────────────────────────────────────────────────────────
     public int totalWordsScored  { get; private set; }
     public int highestWordScore  { get; private set; }
+    public int longestWordLength { get; private set; }   // for Logophile challenge
+    public int maxLexiconsHeld   { get; private set; }   // for Polymath challenge
     private readonly HashSet<string> scoredWordSet = new HashSet<string>();
 
     // ── Starter Pick ─────────────────────────────────────────────────────────
@@ -53,13 +55,13 @@ public class RunManager : MonoBehaviour
     public char featuredLetter { get; private set; }
 
     // ── Progression Rewards (awarded after each Exam) ─────────────────────────
-    /// <summary>Current maximum hand size. Starts at 7, grows +1 per Exam (cap 10).</summary>
+    /// <summary>Current maximum hand size. Starts at 7, grows +1 per blind cleared (cap 12).</summary>
     public int currentHandSize { get; private set; } = 7;
     /// <summary>
     /// Half-side of the unlocked square board area (for the 13×13 grid, half = 6).
     ///   radius 4 → centre  9×9  (cells 2–10)  — starting area
-    ///   radius 5 → centre 11×11 (cells 1–11)  — unlocks after Exam 3 (Standard)
-    ///   radius 6 → full   13×13 (cells 0–12)  — unlocks after Exam 6 (Standard)
+    ///   radius 5 → centre 11×11 (cells 1–11)  — unlocks after Exam 1 (Standard)
+    ///   radius 6 → full   13×13 (cells 0–12)  — unlocks after Exam 2 (Standard)
     /// </summary>
     public int unlockedRadius  { get; private set; } = 4;
     /// <summary>Total Exams cleared this run.</summary>
@@ -94,11 +96,46 @@ public class RunManager : MonoBehaviour
         score            = 0;
         totalWordsScored = 0;
         highestWordScore = 0;
+        longestWordLength = 0;
+        maxLexiconsHeld   = 0;
         examsCleared     = 0;
         activeLexicon.Clear();
         scoredWordSet.Clear();
         blindAssets = Resources.LoadAll<BlindData>("Blinds");
         RollFeaturedLetter();
+
+        // Apply Index permanent upgrades (Marginalia, Annotated Hand)
+        var meta = MetaProgressionManager.Instance;
+        if (meta != null)
+        {
+            gold            += meta.GoldBonus;
+            currentHandSize += meta.HandSizeBonus;
+        }
+
+        // Reset all LetterData chip values to base, then apply Etymology research bonuses.
+        // This prevents shop LetterUpgrade purchases from the previous run from compounding.
+        var allLetterData = Resources.LoadAll<LetterData>("Letters");
+        foreach (var ld in allLetterData)
+        {
+            ld.chipValue = ld.baseChipValue > 0 ? ld.baseChipValue : ld.chipValue;
+            if (meta != null)
+                ld.chipValue += meta.GetLetterResearchLevel(ld.letter);
+        }
+
+        // Apply pre-loaded starting Lexicon card (Scholar configs)
+        if (config != null && config.hasStartingLexicon)
+        {
+            var allLex = Resources.LoadAll<LexiconWordData>("Lexicon");
+            foreach (var lex in allLex)
+            {
+                if (lex.effectType == config.startingLexiconEffect && CanAddLexicon())
+                {
+                    AddLexicon(lex);
+                    isStarterPick = false; // already have a starting card — skip the pick screen
+                    break;
+                }
+            }
+        }
     }
 
     // ── Score ─────────────────────────────────────────────────────────────────
@@ -143,6 +180,11 @@ public class RunManager : MonoBehaviour
     public bool AdvanceBlind()
     {
         ResetBlindScore();
+
+        // Hand grows +1 on every blind cleared, cap 12
+        if (currentHandSize < 12)
+            currentHandSize++;
+
         currentBlind++;
         if (currentBlind > 2)
         {
@@ -156,10 +198,9 @@ public class RunManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Awards post-Exam progression rewards. Called by GameManager after an Exam is cleared.
-    /// Hand grows +1 per Exam (cap 10). Board expands at the examsCleared thresholds defined
-    /// by the active RunConfig (Standard: {3,6}; Quick Run: {2,3}).
-    /// Returns a <see cref="ProgressionRewards"/> struct describing exactly what changed.
+    /// Awards post-Exam board expansion. Called by GameManager after an Exam (Boss blind) is cleared.
+    /// Hand growth happens every blind in AdvanceBlind(). Board expands at the thresholds defined
+    /// by the active RunConfig (default {1, 2}: 11×11 after Exam 1, 13×13 after Exam 2).
     /// </summary>
     public ProgressionRewards OnExamCleared()
     {
@@ -172,16 +213,13 @@ public class RunManager : MonoBehaviour
             previousBoardSize = unlockedRadius * 2 + 1,
         };
 
-        // Hand: +1 per Exam, cap at 10
-        if (currentHandSize < 10)
-        {
-            currentHandSize++;
-            r.handGrew = true;
-        }
+        // Hand grows in AdvanceBlind() on every blind — no additional growth here.
+        r.handGrew    = false;
         r.newHandSize = currentHandSize;
 
         // Board: expand at the thresholds defined by the active RunConfig.
-        int[] expandAt = ActiveConfig?.boardExpandAtExams ?? new[] { 3, 6 };
+        // Default {1, 2}: full 13×13 reached by Exam 2 (end of Ante 2 Boss).
+        int[] expandAt = ActiveConfig?.boardExpandAtExams ?? new[] { 1, 2 };
         if (unlockedRadius < 6 && expandAt.Contains(examsCleared))
         {
             unlockedRadius++;
@@ -253,6 +291,10 @@ public class RunManager : MonoBehaviour
             totalWordsScored++;
         if (wordScore > highestWordScore)
             highestWordScore = wordScore;
+        if (word.Length > longestWordLength)
+            longestWordLength = word.Length;
+        if (activeLexicon.Count > maxLexiconsHeld)
+            maxLexiconsHeld = activeLexicon.Count;
     }
 
     // ── Private Helpers ───────────────────────────────────────────────────────

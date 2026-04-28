@@ -39,6 +39,8 @@ public class ScoreUI : MonoBehaviour
     // ── Runtime ────────────────────────────────────────────────────────────────
     private RectTransform             _canvasRT;
     private RectTransform             _wordDisplayArea;  // child of THIS panel
+    private ScrollRect                _scrollRect;       // scrolls word rows
+    private RectTransform             _contentRT;        // growing content inside scroll
     private Text                      _centreResultText;
     private readonly List<GameObject> _wordRows = new List<GameObject>();
 
@@ -84,15 +86,83 @@ public class ScoreUI : MonoBehaviour
         if (_wordDisplayArea == null)
         {
             var go = new GameObject("WordDisplayArea", typeof(RectTransform));
-            go.transform.SetParent(transform, false); // child of the SCORING PANEL
+            go.transform.SetParent(transform, false);
             _wordDisplayArea           = go.GetComponent<RectTransform>();
-            // Centred between the left ScoreOverlay (right edge ≈270px) and the
-            // right ScoringLexiconSidebar (left edge ≈ screen_width - 430px).
-            // Using pixel offsets from screen edges so centering is resolution-independent.
             _wordDisplayArea.anchorMin = new Vector2(0f, 0f);
             _wordDisplayArea.anchorMax = new Vector2(1f, 1f);
-            _wordDisplayArea.offsetMin = new Vector2(280f,  60f);   // 280px from left  (past score overlay)
-            _wordDisplayArea.offsetMax = new Vector2(-440f, -160f); // 440px from right (past lexicon sidebar)
+            _wordDisplayArea.offsetMin = new Vector2(280f,  60f);
+            _wordDisplayArea.offsetMax = new Vector2(-440f, -160f);
+
+            // Transparent image so ScrollRect receives pointer/scroll events
+            var bg = go.AddComponent<Image>();
+            bg.color         = new Color(0f, 0f, 0f, 0.01f);
+            bg.raycastTarget = true;
+
+            // ScrollRect on the display area — vertical only
+            _scrollRect = go.AddComponent<ScrollRect>();
+            _scrollRect.horizontal        = false;
+            _scrollRect.scrollSensitivity = 30f;
+
+            // Viewport: fills the area minus an 18px strip on the right for the scrollbar
+            var vpGo = new GameObject("Viewport", typeof(RectTransform));
+            vpGo.transform.SetParent(go.transform, false);
+            var vpRt      = vpGo.GetComponent<RectTransform>();
+            vpRt.anchorMin = Vector2.zero;
+            vpRt.anchorMax = Vector2.one;
+            vpRt.offsetMin = Vector2.zero;
+            vpRt.offsetMax = new Vector2(-18f, 0f);
+            vpGo.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.01f);
+            vpGo.AddComponent<Mask>().showMaskGraphic = false;
+
+            // Content: top-anchored, height is updated manually as rows are added
+            var contentGo = new GameObject("Content", typeof(RectTransform));
+            contentGo.transform.SetParent(vpGo.transform, false);
+            _contentRT                  = contentGo.GetComponent<RectTransform>();
+            _contentRT.anchorMin        = new Vector2(0f, 1f);
+            _contentRT.anchorMax        = new Vector2(1f, 1f);
+            _contentRT.pivot            = new Vector2(0.5f, 1f);
+            _contentRT.anchoredPosition = Vector2.zero;
+            _contentRT.sizeDelta        = new Vector2(0f, 0f);
+
+            // Vertical scrollbar — right 18px of the display area
+            var sbGo = new GameObject("Scrollbar", typeof(RectTransform));
+            sbGo.transform.SetParent(go.transform, false);
+            var sbRt      = sbGo.GetComponent<RectTransform>();
+            sbRt.anchorMin = new Vector2(1f, 0f);
+            sbRt.anchorMax = Vector2.one;
+            sbRt.pivot     = new Vector2(1f, 0.5f);
+            sbRt.offsetMin = new Vector2(-18f, 0f);
+            sbRt.offsetMax = Vector2.zero;
+            sbGo.AddComponent<Image>().color = new Color(0.15f, 0.12f, 0.14f, 0.7f);
+            var sb = sbGo.AddComponent<Scrollbar>();
+            sb.direction = Scrollbar.Direction.BottomToTop;
+
+            // Sliding area (2px inset)
+            var slideGo = new GameObject("SlidingArea", typeof(RectTransform));
+            slideGo.transform.SetParent(sbGo.transform, false);
+            var slideRt      = slideGo.GetComponent<RectTransform>();
+            slideRt.anchorMin = Vector2.zero;
+            slideRt.anchorMax = Vector2.one;
+            slideRt.offsetMin = new Vector2(2f, 2f);
+            slideRt.offsetMax = new Vector2(-2f, -2f);
+
+            // Drag handle
+            var handleGo = new GameObject("Handle", typeof(RectTransform));
+            handleGo.transform.SetParent(slideGo.transform, false);
+            var handleRt      = handleGo.GetComponent<RectTransform>();
+            handleRt.anchorMin = Vector2.zero;
+            handleRt.anchorMax = Vector2.one;
+            handleRt.offsetMin = Vector2.zero;
+            handleRt.offsetMax = Vector2.zero;
+            var handleImg = handleGo.AddComponent<Image>();
+            handleImg.color = new Color(0.55f, 0.45f, 0.50f, 0.85f);
+            sb.handleRect    = handleRt;
+            sb.targetGraphic = handleImg;
+
+            _scrollRect.viewport                   = vpRt;
+            _scrollRect.content                    = _contentRT;
+            _scrollRect.verticalScrollbar          = sb;
+            _scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
         }
 
         // PASSED / FAILED text: anchored inside the word display area.
@@ -100,7 +170,7 @@ public class ScoreUI : MonoBehaviour
         if (_centreResultText == null)
         {
             var go = new GameObject("CentreResult", typeof(RectTransform));
-            go.transform.SetParent(_wordDisplayArea, false);
+            go.transform.SetParent(_contentRT != null ? (Transform)_contentRT : _wordDisplayArea, false);
             var rt            = go.GetComponent<RectTransform>();
             rt.anchorMin      = new Vector2(0f, 1f);
             rt.anchorMax      = new Vector2(1f, 1f);
@@ -262,6 +332,10 @@ public class ScoreUI : MonoBehaviour
 
                 nextRowTop += RowH + RowGap;
 
+                // Expand content and scroll so the new row is visible
+                if (_contentRT != null) _contentRT.sizeDelta = new Vector2(0f, nextRowTop);
+                if (_scrollRect != null) _scrollRect.verticalNormalizedPosition = 0f;
+
                 // Pause before next word's tiles begin
                 yield return new WaitForSeconds(0.3f);
             }
@@ -277,6 +351,10 @@ public class ScoreUI : MonoBehaviour
             _centreResultText.text  = passed ? "PASSED!" : "FAILED";
             _centreResultText.color = passed ? passColor  : failColor;
             _centreResultText.gameObject.SetActive(true);
+
+            // Expand content to include the result label, then scroll to it
+            if (_contentRT != null) _contentRT.sizeDelta = new Vector2(0f, nextRowTop + 80f);
+            if (_scrollRect != null) _scrollRect.verticalNormalizedPosition = 0f;
         }
         else if (resultText != null)
         {
@@ -291,13 +369,16 @@ public class ScoreUI : MonoBehaviour
     // ── Spawn helpers ──────────────────────────────────────────────────────────
     private GameObject SpawnWordRow(string word, float topOffset, float rowH)
     {
+        Transform parent = _contentRT != null ? (Transform)_contentRT
+                         : _wordDisplayArea  != null ? (Transform)_wordDisplayArea
+                         : transform;
         GameObject go;
         if (wordRowPrefab != null)
-            go = Instantiate(wordRowPrefab, _wordDisplayArea ?? transform);
+            go = Instantiate(wordRowPrefab, parent);
         else
         {
             go = new GameObject($"Row_{word}", typeof(RectTransform));
-            go.transform.SetParent(_wordDisplayArea ?? transform, false);
+            go.transform.SetParent(parent, false);
         }
         go.name = $"Row_{word}";
         var rt              = go.GetComponent<RectTransform>();
@@ -439,6 +520,8 @@ public class ScoreUI : MonoBehaviour
     {
         foreach (var r in _wordRows) if (r != null) Destroy(r);
         _wordRows.Clear();
+        if (_contentRT  != null) _contentRT.sizeDelta = new Vector2(0f, 0f);
+        if (_scrollRect != null) _scrollRect.verticalNormalizedPosition = 1f; // reset to top
     }
 
     // ── Flying chip ────────────────────────────────────────────────────────────

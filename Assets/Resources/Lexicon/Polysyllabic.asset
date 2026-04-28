@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86a4b7912a726fc489660067eb4f8958, type: 3}
   m_Name: Polysyllabic
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::LexiconWordData
   displayName: Polysyllabic
   flavorText: The longer the word, the more it commands.
   effectDescription: "5+ letters: +0.5\xD7\n7+ letters: +1.0\xD7\n10+ letters: +2.0\xD7"
@@ -19,3 +19,4 @@ MonoBehaviour:
   effectType: 10
   effectValue: 0
   shopCost: 6
+  discoveryTier: 3

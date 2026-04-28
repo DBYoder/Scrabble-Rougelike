@@ -23,6 +23,20 @@ public enum LexiconEffectType
     Syllabary,       // Words with 3+ distinct vowels score +1.5× Mult
     Acrostic,        // Words starting/ending at grid edge score +25 chips
     Lexeme,          // Each valid word beyond the first adds +0.3× Mult to all (cap +2×)
+
+    // Tier 1 — expansion set
+    Isogram,         // Word with no repeated letters → +2× Mult
+    Epanalepsis,     // Word starts and ends with same letter → +1.5× Mult
+    Chiasmus,        // Turn has both H and V words → +20 chips per word
+    Appendage,       // Word ≤3 letters AND crosses another → +30 chips
+
+    // Tier 2 — expansion set
+    Litotes,         // Word has ≤1 distinct vowel → +2× Mult
+    Polyphony,       // Max letter freq ≥3 → +(freq−2)×0.8 Mult
+
+    // Tier 3 — expansion set
+    Couplet,         // 2+ words of same length this turn → +25 chips per word
+    Compendium,      // +10 chips per active Lexicon per word
 }
 
 [CreateAssetMenu(fileName = "Lexicon_Hapax", menuName = "Crossword/Lexicon Entry")]
@@ -40,4 +54,7 @@ public class LexiconWordData : ScriptableObject
 
     [Header("Shop")]
     public int shopCost = 5;
+
+    [Header("Meta-Progression")]
+    public int discoveryTier = 1;
 }

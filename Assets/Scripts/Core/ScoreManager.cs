@@ -39,16 +39,28 @@ public class ScoreManager : MonoBehaviour
     public void ResetRoundWords() => scoredWordsThisRound.Clear();
 
     // ── Main Entry Point ─────────────────────────────────────────────────────
+    /// <param name="preview">
+    /// Pass true when calling for a live placement preview.
+    /// Modifier bonuses are still calculated and displayed, but
+    /// <c>cell.modifierUsed</c> is NOT set — the flag is only consumed
+    /// by the real scoring call (preview = false, the default).
+    /// </param>
     public ScoreResult CalculateScore(
-        List<Word>           validWords,
+        List<Word>            validWords,
         List<LexiconWordData> activeLexicon,
-        BossModifier         bossModifier = BossModifier.None)
+        BossModifier          bossModifier = BossModifier.None,
+        bool                  preview      = false)
     {
         var result = new ScoreResult();
         if (validWords == null || validWords.Count == 0) return result;
 
         // Build intersection map: how many words use each grid cell
         var cellWordCount = BuildIntersectionMap(validWords);
+
+        // Cells whose modifiers fire this submission — marked used AFTER all words
+        // are scored, so every word formed in the same turn benefits from the bonus.
+        // In preview mode nothing is ever marked (flag stays unconsumed for real scoring).
+        var consumedThisTurn = new System.Collections.Generic.HashSet<GridCell>();
 
         // Resolve lexicon references once
         bool hasHapax        = HasLexicon(activeLexicon, LexiconEffectType.HapaxLegomenon);
@@ -70,6 +82,14 @@ public class ScoreManager : MonoBehaviour
         bool hasSyllabary    = HasLexicon(activeLexicon, LexiconEffectType.Syllabary);
         bool hasAcrostic     = HasLexicon(activeLexicon, LexiconEffectType.Acrostic);
         bool hasLexeme       = HasLexicon(activeLexicon, LexiconEffectType.Lexeme);
+        bool hasIsogram      = HasLexicon(activeLexicon, LexiconEffectType.Isogram);
+        bool hasEpanalepsis  = HasLexicon(activeLexicon, LexiconEffectType.Epanalepsis);
+        bool hasChiasmus     = HasLexicon(activeLexicon, LexiconEffectType.Chiasmus);
+        bool hasAppendage    = HasLexicon(activeLexicon, LexiconEffectType.Appendage);
+        bool hasLitotes      = HasLexicon(activeLexicon, LexiconEffectType.Litotes);
+        bool hasPolyphony    = HasLexicon(activeLexicon, LexiconEffectType.Polyphony);
+        bool hasCouplet      = HasLexicon(activeLexicon, LexiconEffectType.Couplet);
+        bool hasCompendium   = HasLexicon(activeLexicon, LexiconEffectType.Compendium);
 
         char rarestLetter  = hasHapax   ? GetRarestBoardLetter(validWords) : '\0';
         char featuredLetter = hasGlossary ? GetFeaturedLetter() : '\0';
@@ -81,6 +101,21 @@ public class ScoreManager : MonoBehaviour
 
         // Lexeme: pre-compute board density bonus (all words share the same value)
         float lexemeBonus = hasLexeme ? Mathf.Min((validWords.Count - 1) * 0.3f, 2.0f) : 0f;
+
+        // Chiasmus: fires if this turn has at least one H word AND one V word
+        bool chiasmusTriggered = hasChiasmus && HasBothOrientations(validWords);
+
+        // Couplet: which word lengths appear 2+ times this turn
+        var coupletLengths = new HashSet<int>();
+        if (hasCouplet)
+        {
+            var lengthCounts = new Dictionary<int, int>();
+            foreach (var w in validWords)
+                lengthCounts[w.text.Length] = lengthCounts.ContainsKey(w.text.Length)
+                    ? lengthCounts[w.text.Length] + 1 : 1;
+            foreach (var kvp in lengthCounts)
+                if (kvp.Value >= 2) coupletLengths.Add(kvp.Key);
+        }
 
         // Score each word
         var anagramTracker = new HashSet<string>(); // sorted chars of words scored this round
@@ -101,33 +136,36 @@ public class ScoreManager : MonoBehaviour
 
                 int tc = tile.TotalChips;
 
-                // Cell letter modifiers (DL / TL) — consumed on first use (Scrabble rule).
-                // modifierUsed resets automatically when ClearGrid → InitGrid is called.
+                // Cell letter/word modifiers — first-use only (Scrabble rule).
+                // Within a single submission every word crossing this cell gets the
+                // bonus; the cell is marked used only AFTER all words are processed
+                // (see consumedThisTurn flush below the word loop).
+                // Preview calls compute the bonus for display but never consume the flag.
                 if (!cell.modifierUsed)
                 {
                     if (cell.modifier == CellModifier.DoubleLetter)
                     {
                         tc *= 2;
                         wr.bonusLabels.Add($"DL '{char.ToUpper(tile.Letter)}'×2");
-                        cell.modifierUsed = true;
+                        if (!preview) consumedThisTurn.Add(cell);
                     }
                     else if (cell.modifier == CellModifier.TripleLetter)
                     {
                         tc *= 3;
                         wr.bonusLabels.Add($"TL '{char.ToUpper(tile.Letter)}'×3");
-                        cell.modifierUsed = true;
+                        if (!preview) consumedThisTurn.Add(cell);
                     }
 
-                    // Accumulate cell word multipliers (DW / TW) — also first-use only
+                    // Accumulate cell word multipliers (DW / TW)
                     if (cell.modifier == CellModifier.DoubleWord)
                     {
                         cellWordMult *= 2f;
-                        cell.modifierUsed = true;
+                        if (!preview) consumedThisTurn.Add(cell);
                     }
                     else if (cell.modifier == CellModifier.TripleWord)
                     {
                         cellWordMult *= 3f;
-                        cell.modifierUsed = true;
+                        if (!preview) consumedThisTurn.Add(cell);
                     }
                 }
 
@@ -211,6 +249,44 @@ public class ScoreManager : MonoBehaviour
                 wr.bonusLabels.Add("Sesquipedalian +25");
                 if (!wr.triggeredEffects.Contains(LexiconEffectType.Sesquipedalian))
                     wr.triggeredEffects.Add(LexiconEffectType.Sesquipedalian);
+            }
+
+            // Chiasmus: turn has both H and V words → +20 chips
+            if (chiasmusTriggered)
+            {
+                chips += 20;
+                wr.bonusLabels.Add("Chiasmus +20");
+                if (!wr.triggeredEffects.Contains(LexiconEffectType.Chiasmus))
+                    wr.triggeredEffects.Add(LexiconEffectType.Chiasmus);
+            }
+
+            // Appendage: word ≤3 letters AND crosses at least one other word → +30 chips
+            if (hasAppendage && word.text.Length <= 3
+                && CountWordsSharedWith(word, validWords, cellWordCount) > 0)
+            {
+                chips += 30;
+                wr.bonusLabels.Add("Appendage +30");
+                if (!wr.triggeredEffects.Contains(LexiconEffectType.Appendage))
+                    wr.triggeredEffects.Add(LexiconEffectType.Appendage);
+            }
+
+            // Couplet: 2+ words of same length this turn → +25 chips
+            if (hasCouplet && coupletLengths.Contains(word.text.Length))
+            {
+                chips += 25;
+                wr.bonusLabels.Add("Couplet +25");
+                if (!wr.triggeredEffects.Contains(LexiconEffectType.Couplet))
+                    wr.triggeredEffects.Add(LexiconEffectType.Couplet);
+            }
+
+            // Compendium: +10 chips per active Lexicon
+            if (hasCompendium)
+            {
+                int compBonus = activeLexicon.Count * 10;
+                chips += compBonus;
+                wr.bonusLabels.Add($"Compendium +{compBonus}");
+                if (!wr.triggeredEffects.Contains(LexiconEffectType.Compendium))
+                    wr.triggeredEffects.Add(LexiconEffectType.Compendium);
             }
 
             wr.chips = chips;
@@ -366,6 +442,64 @@ public class ScoreManager : MonoBehaviour
                 }
             }
 
+            // Isogram: no repeated letters → +2× Mult
+            if (hasIsogram)
+            {
+                var seen = new HashSet<char>();
+                bool isIsogram = true;
+                foreach (char c in word.text) { if (!seen.Add(c)) { isIsogram = false; break; } }
+                if (isIsogram)
+                {
+                    mult += 2f;
+                    wr.bonusLabels.Add("Isogram +2×");
+                    if (!wr.triggeredEffects.Contains(LexiconEffectType.Isogram))
+                        wr.triggeredEffects.Add(LexiconEffectType.Isogram);
+                }
+            }
+
+            // Epanalepsis: starts and ends with same letter → +1.5× Mult
+            if (hasEpanalepsis && word.text.Length >= 2
+                && word.text[0] == word.text[word.text.Length - 1])
+            {
+                mult += 1.5f;
+                wr.bonusLabels.Add("Epanalepsis +1.5×");
+                if (!wr.triggeredEffects.Contains(LexiconEffectType.Epanalepsis))
+                    wr.triggeredEffects.Add(LexiconEffectType.Epanalepsis);
+            }
+
+            // Litotes: at most 1 distinct vowel → +2× Mult
+            if (hasLitotes)
+            {
+                var vowelSet = new HashSet<char>();
+                foreach (char c in word.text)
+                    if (IsVowel(c)) vowelSet.Add(c);
+                if (vowelSet.Count <= 1)
+                {
+                    mult += 2f;
+                    wr.bonusLabels.Add("Litotes +2×");
+                    if (!wr.triggeredEffects.Contains(LexiconEffectType.Litotes))
+                        wr.triggeredEffects.Add(LexiconEffectType.Litotes);
+                }
+            }
+
+            // Polyphony: max letter freq ≥3 → +(freq−2)×0.8 Mult
+            if (hasPolyphony)
+            {
+                var freq = new Dictionary<char, int>();
+                foreach (char c in word.text)
+                    freq[c] = freq.ContainsKey(c) ? freq[c] + 1 : 1;
+                int maxFreq = 0;
+                foreach (var v in freq.Values) if (v > maxFreq) maxFreq = v;
+                if (maxFreq >= 3)
+                {
+                    float polBonus = (maxFreq - 2) * 0.8f;
+                    mult += polBonus;
+                    wr.bonusLabels.Add($"Polyphony ×{maxFreq - 2} +{polBonus:F1}×");
+                    if (!wr.triggeredEffects.Contains(LexiconEffectType.Polyphony))
+                        wr.triggeredEffects.Add(LexiconEffectType.Polyphony);
+                }
+            }
+
             // Lexeme: board density bonus (pre-computed above)
             if (hasLexeme && lexemeBonus > 0f)
             {
@@ -383,6 +517,12 @@ public class ScoreManager : MonoBehaviour
             // Register word for Neologism tracking and high-score tracking
             RunManager.Instance?.RegisterScoredWord(word.text, wr.score);
         }
+
+        // Mark every modifier cell that fired this submission as permanently used.
+        // Done here — after all words — so every word formed in the same turn
+        // received the bonus before the flag was consumed.
+        foreach (var cell in consumedThisTurn)
+            cell.modifierUsed = true;
 
         return result;
     }
@@ -470,5 +610,35 @@ public class ScoreManager : MonoBehaviour
         char[] arr = s.ToCharArray();
         System.Array.Sort(arr);
         return new string(arr);
+    }
+
+    private static bool IsHorizontal(Word word)
+    {
+        if (word.cellPositions.Count <= 1) return false;
+        int y = word.cellPositions[0].y;
+        foreach (var pos in word.cellPositions)
+            if (pos.y != y) return false;
+        return true;
+    }
+
+    private static bool IsVertical(Word word)
+    {
+        if (word.cellPositions.Count <= 1) return false;
+        int x = word.cellPositions[0].x;
+        foreach (var pos in word.cellPositions)
+            if (pos.x != x) return false;
+        return true;
+    }
+
+    private static bool HasBothOrientations(List<Word> words)
+    {
+        bool hasH = false, hasV = false;
+        foreach (var w in words)
+        {
+            if (IsHorizontal(w)) hasH = true;
+            if (IsVertical(w))   hasV = true;
+            if (hasH && hasV) return true;
+        }
+        return false;
     }
 }

@@ -55,19 +55,24 @@ public static class CreateLetterDataAssets
         {
             string path = $"{folder}/Letter_{letter}.asset";
 
-            // Skip if already exists
             var existing = AssetDatabase.LoadAssetAtPath<LetterData>(path);
             if (existing != null)
             {
-                Debug.Log($"[CreateLetterDataAssets] Skipping {letter} — already exists.");
+                // Sync baseChipValue on existing assets (safe to update — never mutated)
+                if (existing.baseChipValue != chips)
+                {
+                    existing.baseChipValue = chips;
+                    EditorUtility.SetDirty(existing);
+                }
                 continue;
             }
 
-            var data        = ScriptableObject.CreateInstance<LetterData>();
-            data.letter     = char.ToLower(letter);
-            data.chipValue  = chips;
-            data.weight     = weight;
-            data.isRare     = isRare;
+            var data           = ScriptableObject.CreateInstance<LetterData>();
+            data.letter        = char.ToLower(letter);
+            data.chipValue     = chips;
+            data.baseChipValue = chips;
+            data.weight        = weight;
+            data.isRare        = isRare;
 
             AssetDatabase.CreateAsset(data, path);
             created++;
@@ -93,77 +98,80 @@ public static class CreateLetterDataAssets
         if (!AssetDatabase.IsValidFolder(folder))
             AssetDatabase.CreateFolder("Assets/Resources", "Lexicon");
 
-        // (filename, displayName, flavorText, effectDescription, effectType, shopCost)
-        var entries = new (string, string, string, string, LexiconEffectType, int)[]
+        // (filename, displayName, flavorText, effectDescription, effectType, shopCost, discoveryTier)
+        var entries = new (string, string, string, string, LexiconEffectType, int, int)[]
         {
             ("Hapax_Legomenon",
              "Hapax Legomenon",
              "A word that appears only once in all of recorded literature.",
              "The rarest letter in your hand scores ×4 chips.",
-             LexiconEffectType.HapaxLegomenon, 6),
+             LexiconEffectType.HapaxLegomenon, 6, 2),
 
             ("Portmanteau",
              "Portmanteau",
              "Two words crammed into one — like 'brunch' or 'smog'.",
              "Any word that shares tiles with 2+ other words scores ×2 mult.",
-             LexiconEffectType.Portmanteau, 7),
+             LexiconEffectType.Portmanteau, 7, 2),
 
             ("Loanword",
              "Loanword",
              "Borrowed from another language, Q and all.",
              "Words containing Q not followed by U give +3 Mult.",
-             LexiconEffectType.Loanword, 5),
+             LexiconEffectType.Loanword, 5, 1),
 
             ("Palindrome",
              "Palindrome",
              "The same forwards as backwards — 'racecar', 'level', 'noon'.",
              "Words that read the same forwards and backwards score ×5 Mult.",
-             LexiconEffectType.Palindrome, 8),
+             LexiconEffectType.Palindrome, 8, 2),
 
             ("Pangram",
              "Pangram",
              "The quick brown fox jumps over the lazy dog.",
              "If all 7 hand tiles are placed this round: +50 flat chips.",
-             LexiconEffectType.Pangram, 6),
+             LexiconEffectType.Pangram, 6, 1),
 
             ("Neologism",
              "Neologism",
              "New words bubble up. Keep coining.",
              "Each unique word you've scored this run adds +0.1 Mult (stacks).",
-             LexiconEffectType.Neologism, 7),
+             LexiconEffectType.Neologism, 7, 2),
 
             ("Anagram",
              "Anagram",
              "The same letters, rearranged. SILENT = LISTEN.",
              "Placing a word that uses the exact same letters as a previous word this round: ×2 Mult.",
-             LexiconEffectType.Anagram, 5),
+             LexiconEffectType.Anagram, 5, 2),
 
             ("Oxymoron",
              "Oxymoron",
              "A self-contradicting pair — like 'deafening silence'.",
              "Words with Q and a common vowel in the same word: +2 Mult.",
-             LexiconEffectType.Oxymoron, 4),
+             LexiconEffectType.Oxymoron, 4, 3),
 
             ("Sesquipedalian",
              "Sesquipedalian",
              "Given to using long words. Ironically, also a long word.",
              "Words of 9+ letters score an additional +25 flat chips.",
-             LexiconEffectType.Sesquipedalian, 5),
+             LexiconEffectType.Sesquipedalian, 5, 3),
 
             ("The_Glossary",
              "The Glossary",
              "Every round, one letter gets its moment to shine.",
              "Each round a random letter is 'featured' — it scores double chips.",
-             LexiconEffectType.TheGlossary, 6),
+             LexiconEffectType.TheGlossary, 6, 2),
         };
 
         int created = 0;
-        foreach (var (filename, display, flavor, effect, type, cost) in entries)
+        foreach (var (filename, display, flavor, effect, type, cost, tier) in entries)
         {
             string path = $"{folder}/{filename}.asset";
-            if (AssetDatabase.LoadAssetAtPath<LexiconWordData>(path) != null)
+            var existing = AssetDatabase.LoadAssetAtPath<LexiconWordData>(path);
+            if (existing != null)
             {
-                Debug.Log($"[CreateLexiconAssets] Skipping {display} — already exists.");
+                // Asset already exists — update tier only (preserve other authored values)
+                existing.discoveryTier = tier;
+                EditorUtility.SetDirty(existing);
                 continue;
             }
 
@@ -173,6 +181,7 @@ public static class CreateLetterDataAssets
             data.effectDescription  = effect;
             data.effectType         = type;
             data.shopCost           = cost;
+            data.discoveryTier      = tier;
 
             AssetDatabase.CreateAsset(data, path);
             created++;

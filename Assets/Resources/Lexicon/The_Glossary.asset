@@ -20,3 +20,4 @@ MonoBehaviour:
   effectType: 9
   effectValue: 0
   shopCost: 6
+  discoveryTier: 2

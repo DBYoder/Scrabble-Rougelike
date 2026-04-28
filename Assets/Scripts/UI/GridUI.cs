@@ -276,7 +276,7 @@ public class GridUI : MonoBehaviour
         if (allToScore.Count > 0 && ScoreManager.Instance != null && RunManager.Instance != null)
         {
             var result = ScoreManager.Instance.CalculateScore(
-                allToScore, RunManager.Instance.activeLexicon, boss);
+                allToScore, RunManager.Instance.activeLexicon, boss, preview: true);
             previewTotal = result.totalScore;
 
             foreach (var wr in result.wordResults)

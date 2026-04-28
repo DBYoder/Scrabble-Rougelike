@@ -13,6 +13,9 @@ public class LetterData : ScriptableObject
     [Tooltip("Base chip value when this letter appears in a word.")]
     public int chipValue = 1;
 
+    [Tooltip("Original chip value set at asset creation. Never mutated — used to reset between runs.")]
+    public int baseChipValue = 1;
+
     [Tooltip("Relative draw weight. Higher = more copies in the tile bag (≈ Scrabble frequency).")]
     public float weight = 1f;
 

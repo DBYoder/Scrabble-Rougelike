@@ -18,17 +18,25 @@ public class RunConfig : ScriptableObject
     public int maxLexiconSlots  = 5;
 
     [Header("Progression")]
-    public int   totalAntes      = 8;
+    public int   totalAntes      = 6;
     public float scoreMultiplier = 1f;   // Divides blind targets (values > 1 make targets easier)
     /// <summary>
     /// Which examsCleared counts trigger a board radius expansion (+1 each time).
-    /// Standard = { 3, 6 }. Quick Run = { 2, 3 } for accelerated expansion.
+    /// Standard = { 1, 2 }: 11×11 after Exam 1, full 13×13 after Exam 2.
     /// </summary>
-    public int[] boardExpandAtExams = { 3, 6 };
+    public int[] boardExpandAtExams = { 1, 2 };
 
     [Header("Mode Flags")]
     public bool noShop         = false;  // Skip Shop state; gold economy disabled
     public bool noUpgrades     = false;  // Skip Upgrade state; no free Lexicon picks
     public bool infiniteMode   = false;  // No Victory state; blind targets scale past Ante 8
     public bool starterLexicon = true;   // Show the pre-run starter Lexicon pick
+
+    [Header("Starting Lexicon")]
+    public bool             hasStartingLexicon    = false;
+    public LexiconEffectType startingLexiconEffect = LexiconEffectType.Verbosity; // read only when hasStartingLexicon = true
+
+    [Header("Scholar Unlock")]
+    public string unlockKey  = "";   // empty = always available
+    [TextArea] public string unlockHint = "";  // shown on the mode card when locked
 }

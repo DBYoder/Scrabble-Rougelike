@@ -10,6 +10,17 @@ public class BossPreviewUI : MonoBehaviour
     public Text modifierDescText;
     public Text anteBlindText;
 
+    private void Start()
+    {
+        // Widen modifier labels to fill the modal (default 400px wraps in a 960px panel)
+        foreach (var t in new[] { modifierNameText, modifierDescText, anteBlindText })
+        {
+            if (t == null) continue;
+            var le = t.GetComponent<LayoutElement>();
+            if (le != null) le.preferredWidth = 900f;
+        }
+    }
+
     public void Populate(BossModifier modifier, string description)
     {
         if (modifierNameText != null)

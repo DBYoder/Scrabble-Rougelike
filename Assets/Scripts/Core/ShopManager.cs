@@ -33,8 +33,16 @@ public class ShopManager : MonoBehaviour
         // --- Lexicon entries ---
         var availableLexicon = new List<LexiconWordData>(allLexiconItems);
         availableLexicon.RemoveAll(l => RunManager.Instance.activeLexicon.Contains(l));
+        // Filter to discovered tiers only
+        if (MetaProgressionManager.Instance != null)
+            availableLexicon.RemoveAll(l => !MetaProgressionManager.Instance.IsDiscovered(l.effectType));
 
-        int lexCount = Mathf.Min(lexiconSlots, availableLexicon.Count);
+        // Apply Index upgrades: Extended Bibliography (+1 slot), Errata (+1 misc)
+        var meta = MetaProgressionManager.Instance;
+        int effectiveLexSlots  = lexiconSlots + (meta != null ? meta.LexiconSlotBonus : 0);
+        int effectiveMiscSlots = miscSlots    + (meta != null ? meta.MiscSlotBonus    : 0);
+
+        int lexCount = Mathf.Min(effectiveLexSlots, availableLexicon.Count);
         for (int i = 0; i < lexCount; i++)
         {
             int idx = Random.Range(0, availableLexicon.Count);
@@ -44,7 +52,7 @@ public class ShopManager : MonoBehaviour
 
         // --- Misc items ---
         var miscPool = new List<ShopItemData>(allShopItems ?? new ShopItemData[0]);
-        int miscCount = Mathf.Min(miscSlots, miscPool.Count);
+        int miscCount = Mathf.Min(effectiveMiscSlots, miscPool.Count);
         for (int i = 0; i < miscCount; i++)
         {
             int idx = Random.Range(0, miscPool.Count);

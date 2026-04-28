@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e480fce1b033ffb4eb9687e0e8ab1cb2, type: 3}
+  m_Name: RunConfig_Philologist
+  m_EditorClassIdentifier: Assembly-CSharp::RunConfig
+  modeName: The Philologist
+  modeDescription: "Starts with the Neologism Lexicon already active and a hand of
+    6 \u2014 breadth over depth."
+  modeAccentColor: {r: 0.278, g: 0.388, b: 0.502, a: 1}
+  startingLives: 3
+  startingGold: 0
+  startingHandSize: 6
+  startingRadius: 4
+  maxLexiconSlots: 5
+  totalAntes: 6
+  scoreMultiplier: 1
+  boardExpandAtExams: 0100000002000000
+  noShop: 0
+  noUpgrades: 0
+  infiniteMode: 0
+  starterLexicon: 0
+  hasStartingLexicon: 1
+  startingLexiconEffect: 5
+  unlockKey: philologist
+  unlockHint: Score 250 unique words across all runs to unlock.

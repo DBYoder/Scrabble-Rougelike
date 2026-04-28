@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86a4b7912a726fc489660067eb4f8958, type: 3}
   m_Name: Verbosity
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::LexiconWordData
   displayName: Verbosity
   flavorText: Words multiply. So do words about words.
   effectDescription: Each word scores +5 chips per letter.
@@ -19,3 +19,4 @@ MonoBehaviour:
   effectType: 14
   effectValue: 0
   shopCost: 5
+  discoveryTier: 1

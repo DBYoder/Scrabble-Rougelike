@@ -13,18 +13,22 @@ MonoBehaviour:
   m_Name: RunConfig_QuickRun
   m_EditorClassIdentifier: Assembly-CSharp::RunConfig
   modeName: Quick Run
-  modeDescription: "4 chapters, tighter targets. No free Lexicon picks \u2014 buy
-    everything from the Shop. Grid and hand reach max size by the end."
+  modeDescription: "3 chapters, ~15 minutes. Easier targets, no free Lexicon picks
+    \u2014 buy everything from the Shop. Board expands to full 13\xD713."
   modeAccentColor: {r: 0.42, g: 0.439, b: 0.278, a: 1}
   startingLives: 3
   startingGold: 4
   startingHandSize: 7
   startingRadius: 4
   maxLexiconSlots: 5
-  totalAntes: 4
-  scoreMultiplier: 1.5
-  boardExpandAtExams: 0200000003000000
+  totalAntes: 3
+  scoreMultiplier: 2
+  boardExpandAtExams: 0100000002000000
   noShop: 0
   noUpgrades: 1
   infiniteMode: 0
   starterLexicon: 0
+  hasStartingLexicon: 0
+  startingLexiconEffect: 14
+  unlockKey: 
+  unlockHint: 

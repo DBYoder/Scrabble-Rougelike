@@ -125,12 +125,20 @@ public class GameManager : MonoBehaviour
                 SetActive(gameOverPanel, true);
                 FadeInPanel(gameOverPanel);
                 SetEndScreenStats(gameOverStatsText);
+                MetaProgressionManager.Instance?.OnRunCompleted(
+                    won: false,
+                    config: RunManager.Instance?.ActiveConfig,
+                    livesRemaining: RunManager.Instance?.lives ?? 0);
                 break;
 
             case GameState.Victory:
                 SetActive(victoryPanel, true);
                 FadeInPanel(victoryPanel);
                 SetEndScreenStats(victoryStatsText);
+                MetaProgressionManager.Instance?.OnRunCompleted(
+                    won: true,
+                    config: RunManager.Instance?.ActiveConfig,
+                    livesRemaining: RunManager.Instance?.lives ?? 0);
                 break;
         }
 

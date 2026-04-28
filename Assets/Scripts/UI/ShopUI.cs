@@ -29,6 +29,12 @@ public class ShopUI : MonoBehaviour
     {
         if (leaveShopButton != null)
             leaveShopButton.onClick.AddListener(OnLeaveShop);
+        // Widen the "YOUR LEXICONS" header label so it fits on one line
+        if (yourLexiconsLabel != null)
+        {
+            var le = yourLexiconsLabel.GetComponent<LayoutElement>();
+            if (le != null) le.preferredWidth = 1800f;
+        }
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -77,7 +83,11 @@ public class ShopUI : MonoBehaviour
         card.transform.SetParent(yourLexiconsParent, false);
 
         var cardImg = card.AddComponent<Image>();
-        cardImg.color = new Color(0.26f, 0.21f, 0.23f); // dark mauve
+        cardImg.color = new Color(0.40f, 0.32f, 0.36f); // lighter mauve — distinct from panel background
+
+        var cardOl = card.AddComponent<Outline>();
+        cardOl.effectColor    = new Color(0.65f, 0.52f, 0.58f, 0.8f);
+        cardOl.effectDistance = new Vector2(2f, -2f);
 
         var cardLe = card.AddComponent<LayoutElement>();
         cardLe.minWidth       = 200f;
