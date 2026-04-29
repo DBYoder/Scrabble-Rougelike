@@ -80,7 +80,11 @@
       "Bash(cd C:\\\\Users\\\\Milo\\\\Cross Word Rougelike\\\\Assets\\\\Audio\\\\Music:*)",
       "WebFetch(domain:opengameart.org)",
       "mcp__Desktop_Commander__read_file",
-      "mcp__Desktop_Commander__start_process"
+      "mcp__Desktop_Commander__start_process",
+      "Bash(xargs cat:*)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }

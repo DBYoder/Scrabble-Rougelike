@@ -90,6 +90,7 @@ GameObject:
   - component: {fileID: 3331450518327826494}
   - component: {fileID: 6776656328805942360}
   - component: {fileID: 2895059043840902287}
+  - component: {fileID: 4711584370975242178}
   - component: {fileID: 1534250561503675764}
   - component: {fileID: 5146593633476468768}
   m_Layer: 0
@@ -143,7 +144,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.26, g: 0.21, b: 0.23, a: 1}
+  m_Color: {r: 0.4, g: 0.32, b: 0.36, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -160,6 +161,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4711584370975242178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 573184529846511082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 0.65, g: 0.52, b: 0.58, a: 0.8}
+  m_EffectDistance: {x: 2, y: -2}
+  m_UseGraphicAlpha: 1
 --- !u!114 &1534250561503675764
 MonoBehaviour:
   m_ObjectHideFlags: 0
