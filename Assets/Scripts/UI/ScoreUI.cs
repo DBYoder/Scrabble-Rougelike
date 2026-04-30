@@ -90,8 +90,8 @@ public class ScoreUI : MonoBehaviour
             _wordDisplayArea           = go.GetComponent<RectTransform>();
             _wordDisplayArea.anchorMin = new Vector2(0f, 0f);
             _wordDisplayArea.anchorMax = new Vector2(1f, 1f);
-            _wordDisplayArea.offsetMin = new Vector2(280f,  60f);
-            _wordDisplayArea.offsetMax = new Vector2(-440f, -160f);
+            _wordDisplayArea.offsetMin = new Vector2(240f,  60f);
+            _wordDisplayArea.offsetMax = new Vector2(-330f, -160f);
 
             // Transparent image so ScrollRect receives pointer/scroll events
             var bg = go.AddComponent<Image>();
@@ -348,7 +348,7 @@ public class ScoreUI : MonoBehaviour
         {
             var rt = _centreResultText.GetComponent<RectTransform>();
             rt.anchoredPosition = new Vector2(0f, -(nextRowTop + 8f));
-            _centreResultText.text  = passed ? "PASSED!" : "FAILED";
+            _centreResultText.text  = passed ? "PASSED!" : "RETRY!";
             _centreResultText.color = passed ? passColor  : failColor;
             _centreResultText.gameObject.SetActive(true);
 
@@ -358,7 +358,7 @@ public class ScoreUI : MonoBehaviour
         }
         else if (resultText != null)
         {
-            resultText.text  = passed ? "PASSED!" : "FAILED";
+            resultText.text  = passed ? "PASSED!" : "RETRY!";
             resultText.color = passed ? passColor  : failColor;
             resultText.gameObject.SetActive(true);
         }
@@ -394,34 +394,44 @@ public class ScoreUI : MonoBehaviour
                                  float tileW, float tileH, int lFont, int cFont)
     {
         GameObject go;
+        var letterSpr = TileSpriteLoader.GetLetterSprite(letter);
         if (wordTilePrefab != null)
         {
-            // Instantiate the editor-authored prefab and populate the named text children.
             go = Instantiate(wordTilePrefab, parent);
+            var img = go.GetComponent<Image>();
+            if (img != null && letterSpr != null)
+            {
+                img.sprite = letterSpr;
+                img.color  = Color.white;
+                img.preserveAspect = false;
+            }
             foreach (var t in go.GetComponentsInChildren<Text>())
             {
+                // Hide the letter text — it is baked into the sprite
+                if (t.name == "L") t.gameObject.SetActive(letterSpr == null);
                 if (t.name == "L") t.text = letter.ToString().ToUpper();
                 if (t.name == "C") t.text = chips.ToString();
             }
         }
         else
         {
-            // Fallback: build the tile inline (same as before).
+            // Fallback: build the tile inline.
             go = new GameObject($"T_{letter}", typeof(RectTransform));
             go.transform.SetParent(parent, false);
 
-            go.AddComponent<Image>().color = new Color(0.988f, 0.867f, 0.737f);
+            var img = go.AddComponent<Image>();
+            if (letterSpr != null) { img.sprite = letterSpr; img.color = Color.white; img.preserveAspect = false; }
+            else img.color = new Color(0.988f, 0.867f, 0.737f);
 
             var ol = go.AddComponent<Outline>();
             ol.effectColor    = new Color(0.55f, 0.40f, 0.20f, 0.5f);
             ol.effectDistance = new Vector2(1.5f, -1.5f);
 
-            // Letter (upper portion)
-            AddText(go.transform, "L", letter.ToString().ToUpper(),
-                    new Vector2(0f, 0.30f), Vector2.one, lFont, FontStyle.Bold,
-                    new Color(0.22f, 0.18f, 0.20f));
+            if (letterSpr == null)
+                AddText(go.transform, "L", letter.ToString().ToUpper(),
+                        new Vector2(0f, 0.30f), Vector2.one, lFont, FontStyle.Bold,
+                        new Color(0.22f, 0.18f, 0.20f));
 
-            // Chip value (bottom strip)
             AddText(go.transform, "C", chips.ToString(),
                     Vector2.zero, new Vector2(1f, 0.34f), cFont, FontStyle.Normal,
                     new Color(0.45f, 0.28f, 0.10f));

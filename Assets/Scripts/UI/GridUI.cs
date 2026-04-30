@@ -14,7 +14,7 @@ public class GridUI : MonoBehaviour
     public Transform  gridParent;   // Parent RectTransform for grid cells
 
     [Header("Layout")]
-    public float cellSize    = 56f;  // 13 cells × 56 + 12 gaps × 3 = 764 px visual span
+    public float cellSize    = 56f;  // 9 cells × 56 + 8 gaps × 3 = 528 px visual span
     public float cellSpacing = 3f;
 
     [Header("Score Preview")]
@@ -148,7 +148,7 @@ public class GridUI : MonoBehaviour
         bool locked = RunManager.Instance != null && !RunManager.Instance.IsCellUnlocked(x, y);
         if (locked)
         {
-            if (img != null) img.color = new Color(0.10f, 0.08f, 0.10f);
+            if (img != null) { img.sprite = null; img.color = new Color(0.10f, 0.08f, 0.10f); }
             if (txt != null) txt.text  = "";
             if (btn != null) btn.interactable = false;
             return;
@@ -160,38 +160,44 @@ public class GridUI : MonoBehaviour
         if (cell.IsOccupied)
         {
             bool isTurn = GridManager.Instance.IsTurnCell(x, y);
-            Color tileColor = isTurn
-                ? (_invalidTurnCells.Contains((x, y)) ? invalidTurnTileColor : turnTileColor)
-                : occupiedColor;
-            if (img != null) img.color = tileColor;
-            if (txt != null) txt.text  = cell.placedTile.Letter.ToString().ToUpper();
+            bool isInvalid = _invalidTurnCells.Contains((x, y));
+            string spriteName = isTurn ? (isInvalid ? "invalid" : "valid") : "occupied";
+            SetCellSprite(img, spriteName);
+            if (txt != null) txt.text = cell.placedTile.Letter.ToString().ToUpper();
         }
         else
         {
             switch (cell.modifier)
             {
                 case CellModifier.TripleWord:
-                    if (img != null) img.color = twColor;
-                    if (txt != null) txt.text  = "TW";
+                    SetCellSprite(img, "tw");
+                    if (txt != null) txt.text = "TW";
                     break;
                 case CellModifier.DoubleWord:
-                    if (img != null) img.color = dwColor;
-                    if (txt != null) txt.text  = cell.isCenter ? "★" : "DW";
+                    SetCellSprite(img, "dw");
+                    if (txt != null) txt.text = cell.isCenter ? "★" : "DW";
                     break;
                 case CellModifier.TripleLetter:
-                    if (img != null) img.color = tlColor;
-                    if (txt != null) txt.text  = "TL";
+                    SetCellSprite(img, "tl");
+                    if (txt != null) txt.text = "TL";
                     break;
                 case CellModifier.DoubleLetter:
-                    if (img != null) img.color = dlColor;
-                    if (txt != null) txt.text  = "DL";
+                    SetCellSprite(img, "dl");
+                    if (txt != null) txt.text = "DL";
                     break;
                 default:
-                    if (img != null) img.color = emptyColor;
-                    if (txt != null) txt.text  = "";
+                    SetCellSprite(img, "empty");
+                    if (txt != null) txt.text = "";
                     break;
             }
         }
+    }
+
+    private static void SetCellSprite(Image img, string name)
+    {
+        if (img == null) return;
+        var spr = TileSpriteLoader.GetCellSprite(name);
+        if (spr != null) { img.sprite = spr; img.color = Color.white; img.preserveAspect = false; }
     }
 
     // ── Input ─────────────────────────────────────────────────────────────────

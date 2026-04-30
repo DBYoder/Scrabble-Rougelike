@@ -38,7 +38,7 @@ public class BossPreviewUI : MonoBehaviour
         if (anteBlindText != null && RunManager.Instance != null)
         {
             var rm = RunManager.Instance;
-            anteBlindText.text = $"Chapter {rm.currentAnte}  —  Exam";
+            anteBlindText.text = $"Chapter {rm.currentAnte} / {rm.MaxAntes}  ·  Exam";
         }
     }
 

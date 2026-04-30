@@ -148,15 +148,15 @@ public static class SceneBuilder
         StretchFull(hudGo.GetComponent<RectTransform>());
 
         // TopBar — 50px strip at top. Shows only: drafts, chapter progress, featured letter.
-        var topBar = CreateStrip(hudGo.transform, "TopBar", isTop: true, thickness: 50f);
+        var topBar = CreateStrip(hudGo.transform, "TopBar", isTop: true, thickness: 42f);
         AddHLG(topBar, 16, TextAnchor.MiddleLeft);
         // childControlWidth must be true so the HLG respects each label's
         // LayoutElement.preferredWidth; without it children collapse to zero width and overlap.
         topBar.GetComponent<HorizontalLayoutGroup>().childControlWidth = true;
-        var livesText         = AddLabel(topBar.transform, "LivesText",          "Drafts: 3", fontSize: 20, bold: true);
+        var livesText         = AddLabel(topBar.transform, "LivesText",          "Drafts: 3", fontSize: 14, bold: true);
         livesText.color = new Color(0.95f, 0.55f, 0.60f); // rose
-        var anteText          = AddLabel(topBar.transform, "AnteText",           "Chapter 1 / 8  ·  Exercise");
-        var featuredLetterTxt = AddLabel(topBar.transform, "FeaturedLetterText", "", fontSize: 22, bold: true);
+        var anteText          = AddLabel(topBar.transform, "AnteText",           "Chapter 1 / 8  ·  Exercise", fontSize: 13);
+        var featuredLetterTxt = AddLabel(topBar.transform, "FeaturedLetterText", "", fontSize: 15, bold: true);
         featuredLetterTxt.color = new Color(1f, 0.88f, 0.25f); // gold — stands out from other labels
 
         // Wire RunUI (HUD labels only — lexicon parents wired after GamePanel/ScoringPanel are built)
@@ -193,8 +193,8 @@ public static class SceneBuilder
 
         var titleTxt    = AddLabel(landingGo.transform, "TitleText",    "CROSSWORD ROGUELIKE", fontSize: 52, bold: true);
         titleTxt.alignment = TextAnchor.MiddleCenter;
-        titleTxt.rectTransform.sizeDelta = new Vector2(460f, 64f);
-        var subtitleTxt = AddLabel(landingGo.transform, "SubtitleText", "Build words. Build power.", fontSize: 24);
+        titleTxt.rectTransform.sizeDelta = new Vector2(640f, 64f);
+        var subtitleTxt = AddLabel(landingGo.transform, "SubtitleText", "Build words. Build power.", fontSize: 20);
         subtitleTxt.alignment = TextAnchor.MiddleCenter;
         subtitleTxt.rectTransform.sizeDelta = new Vector2(460f, 34f);
 
@@ -215,7 +215,7 @@ public static class SceneBuilder
         brLe.preferredWidth  = 640f;
         brLe.preferredHeight = 70f;
 
-        var newGameBtn    = AddButton(btnRowGo.transform, "NewGameButton",    "NEW GAME",
+        var newGameBtn    = AddButton(btnRowGo.transform, "NewGameButton",    "NEW RUN",
                                       new Color(0.28f, 0.50f, 0.30f), width: 140, height: 60);
         StyleButton(newGameBtn, ButtonType.Confirm);
 
@@ -359,18 +359,17 @@ public static class SceneBuilder
         gcRt.anchorMin        = new Vector2(0.5f, 0.5f);
         gcRt.anchorMax        = new Vector2(0.5f, 0.5f);
         gcRt.pivot            = new Vector2(0.5f, 0.5f);
-        gcRt.anchoredPosition = new Vector2(-80f, 72f); // centred between side panels + in play area
-        gcRt.sizeDelta        = new Vector2(772f, 772f); // 764px grid + 4px breathing room each side
+        gcRt.anchoredPosition = new Vector2(-65f, 72f); // centred between side panels + in play area
+        gcRt.sizeDelta        = new Vector2(536f, 536f); // 9×56 + 8×3 = 528px + 4px breathing each side
 
-        // HandArea — 130px strip above bottom, constrained to the play area (x=270..1490)
+        // HandArea — 110px strip above bottom, constrained to the play area (x=210..1580)
         // so tiles appear centred under the grid rather than under the full screen width.
-        var handArea = CreateStrip(gamePanelGo.transform, "HandArea", isTop: false, thickness: 130f);
+        var handArea = CreateStrip(gamePanelGo.transform, "HandArea", isTop: false, thickness: 110f);
         {
             var haRt = handArea.GetComponent<RectTransform>();
             // Shrink from full-width to the play area between the side panels.
-            // offsetMin.x = 270 (left edge of play area), offsetMax.x = -430 (1920-1490=430 from right)
-            haRt.offsetMin = new Vector2(270f, 0f);
-            haRt.offsetMax = new Vector2(-430f, 130f);
+            haRt.offsetMin = new Vector2(210f, 0f);
+            haRt.offsetMax = new Vector2(-340f, 110f);
         }
         AddHLG(handArea, 6, TextAnchor.MiddleCenter);
         var tileHandUI = handArea.AddComponent<TileHandUI>();
@@ -382,8 +381,8 @@ public static class SceneBuilder
         lsRt.anchorMin        = new Vector2(1f, 0.5f);
         lsRt.anchorMax        = new Vector2(1f, 0.5f);
         lsRt.pivot            = new Vector2(1f, 0.5f);
-        lsRt.anchoredPosition = new Vector2(-225f, 20f);
-        lsRt.sizeDelta        = new Vector2(205f, 530f);
+        lsRt.anchoredPosition = new Vector2(-180f, 20f);
+        lsRt.sizeDelta        = new Vector2(160f, 530f);
         lexSidebarGo.AddComponent<Image>().color = new Color(0.18f, 0.14f, 0.16f, 0.7f);
 
         // "LEXICONS" label at top
@@ -418,7 +417,7 @@ public static class SceneBuilder
         abRt.anchorMin        = new Vector2(0.5f, 0f);
         abRt.anchorMax        = new Vector2(0.5f, 0f);
         abRt.pivot            = new Vector2(0.5f, 0f);
-        abRt.anchoredPosition = new Vector2(-80f, 138f); // match grid centre (x=880, screen centre=960)
+        abRt.anchoredPosition = new Vector2(-65f, 118f); // match grid centre; 118 = 110 HandArea + 8px gap
         abRt.sizeDelta        = new Vector2(760f, 55f);
         var abHlg = actionBtns.AddComponent<HorizontalLayoutGroup>();
         abHlg.spacing               = 12;
@@ -433,7 +432,7 @@ public static class SceneBuilder
         StyleButton(submitBtn, ButtonType.Confirm);
         var endRoundBtn     = AddButton(actionBtns.transform, "EndRoundButton",      "END ROUND",        new Color(0.58f, 0.25f, 0.32f), width: 175, height: 55);
         StyleButton(endRoundBtn, ButtonType.Danger);
-        var redrawBtn       = AddButton(actionBtns.transform, "RedrawButton",        "Reshuffle (3)",    new Color(0.42f, 0.44f, 0.28f), width: 175, height: 55);
+        var redrawBtn       = AddButton(actionBtns.transform, "RedrawButton",        "RESHUFFLE (3)",   new Color(0.42f, 0.44f, 0.28f), width: 175, height: 55);
         StyleButton(redrawBtn, ButtonType.Neutral);
         var confirmRedrawBtn= AddButton(actionBtns.transform, "ConfirmRedrawButton", "Confirm Reshuffle",new Color(0.55f, 0.40f, 0.24f), width: 195, height: 55);
         StyleButton(confirmRedrawBtn, ButtonType.Neutral);
@@ -442,7 +441,7 @@ public static class SceneBuilder
         var gridUI = gamePanelGo.AddComponent<GridUI>();
         gridUI.cellPrefab   = cellPrefab;
         gridUI.gridParent   = gridContainerGo.GetComponent<RectTransform>();
-        gridUI.cellSize     = 56f;  // 13*56 + 12*3 = 764 px visual span
+        gridUI.cellSize     = 56f;  // 9*56 + 8*3 = 528 px visual span
         gridUI.cellSpacing  = 3f;
 
         // Score preview panel — left side of game panel (ScrollRect so long breakdowns don't overflow)
@@ -454,7 +453,7 @@ public static class SceneBuilder
         previewRt.anchorMax        = new Vector2(0f, 0.5f);
         previewRt.pivot            = new Vector2(0f, 0.5f);
         previewRt.anchoredPosition = new Vector2(10f, 0f);   // centred vertically
-        previewRt.sizeDelta        = new Vector2(260f, 460f); // taller now that GameInfoPanel is gone
+        previewRt.sizeDelta        = new Vector2(200f, 460f); // taller now that GameInfoPanel is gone
         previewGo.AddComponent<Image>().color = new Color(0.18f, 0.14f, 0.16f, 0.92f);
 
         var previewScroll = previewGo.AddComponent<ScrollRect>();
@@ -517,15 +516,15 @@ public static class SceneBuilder
         overlayRt.anchorMax        = new Vector2(0f, 0.5f);
         overlayRt.pivot            = new Vector2(0f, 0.5f);
         overlayRt.anchoredPosition = new Vector2(10f, 0f);
-        overlayRt.sizeDelta        = new Vector2(260f, 520f);
+        overlayRt.sizeDelta        = new Vector2(220f, 520f);
         overlayGo.AddComponent<Image>().color = new Color(0.18f, 0.14f, 0.16f, 0.92f);
         AddVLG(overlayGo, 10, TextAnchor.UpperCenter);
 
-        AddLabel(overlayGo.transform, "ScoringLabel", "ROUND SCORE", fontSize: 18, bold: true);
-        var totalScoreText  = AddLabel(overlayGo.transform, "TotalScore",  "0",     fontSize: 60, bold: true);
-        var targetScoreText = AddLabel(overlayGo.transform, "TargetScore", "/ 100", fontSize: 24);
+        AddLabel(overlayGo.transform, "ScoringLabel", "ROUND SCORE", fontSize: 14, bold: true);
+        var totalScoreText  = AddLabel(overlayGo.transform, "TotalScore",  "0",     fontSize: 52, bold: true);
+        var targetScoreText = AddLabel(overlayGo.transform, "TargetScore", "/ 100", fontSize: 20);
 
-        var resultText  = AddLabel(overlayGo.transform, "ResultText",  "", fontSize: 38, bold: true);
+        var resultText  = AddLabel(overlayGo.transform, "ResultText",  "", fontSize: 28, bold: true);
         var continueBtn = AddButton(overlayGo.transform, "ContinueButton", "CONTINUE",
                                     new Color(0.28f, 0.50f, 0.30f), width: 200, height: 55);
         StyleButton(continueBtn, ButtonType.Confirm);
@@ -547,8 +546,8 @@ public static class SceneBuilder
         slsRt.anchorMin        = new Vector2(1f, 0.5f);
         slsRt.anchorMax        = new Vector2(1f, 0.5f);
         slsRt.pivot            = new Vector2(1f, 0.5f);
-        slsRt.anchoredPosition = new Vector2(-225f, 20f);
-        slsRt.sizeDelta        = new Vector2(205f, 530f);
+        slsRt.anchoredPosition = new Vector2(-180f, 20f);
+        slsRt.sizeDelta        = new Vector2(150f, 530f);
         scoringLexSidebarGo.AddComponent<Image>().color = new Color(0.18f, 0.14f, 0.16f, 0.7f);
 
         // "LEXICONS" label
@@ -579,11 +578,11 @@ public static class SceneBuilder
                                       transparent: false, color: new Color(0.26f, 0.21f, 0.23f));
         StretchFull(shopPanelGo.GetComponent<RectTransform>());
         AddVLG(shopPanelGo, 16, TextAnchor.UpperCenter);
-        // Push content below the 50px TopBar (50 + 12 default side margin = 62px top padding)
-        shopPanelGo.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(12, 12, 62, 12);
+        // Push content below the 42px TopBar (42 + 12 default side margin = 54px top padding)
+        shopPanelGo.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(12, 12, 54, 12);
 
-        AddLabel(shopPanelGo.transform, "ShopTitle", "SHOP", fontSize: 48, bold: true);
-        var shopGoldText = AddLabel(shopPanelGo.transform, "GoldText", "Gold: 0", fontSize: 28);
+        AddLabel(shopPanelGo.transform, "ShopTitle", "SHOP", fontSize: 44, bold: true);
+        var shopGoldText = AddLabel(shopPanelGo.transform, "GoldText", "Gold: 0", fontSize: 22);
 
         var shopItemsArea = new GameObject("ShopItemsArea", typeof(RectTransform));
         shopItemsArea.transform.SetParent(shopPanelGo.transform, false);
@@ -629,14 +628,14 @@ public static class SceneBuilder
                                          transparent: false, color: new Color(0.26f, 0.21f, 0.23f));
         StretchFull(upgradePanelGo.GetComponent<RectTransform>());
         AddVLG(upgradePanelGo, 16, TextAnchor.UpperCenter);
-        // Push content below the 50px TopBar
-        upgradePanelGo.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(12, 12, 62, 12);
+        // Push content below the 42px TopBar
+        upgradePanelGo.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(12, 12, 54, 12);
 
         // Wide preferredWidth so labels fill the panel instead of capping at the default 400px.
         // Do NOT use childControlWidth=true on the VLG — that would also stretch the skip button.
-        var upgradeTitle = AddLabel(upgradePanelGo.transform, "UpgradeTitle", "LEXICON UPGRADE", fontSize: 48, bold: true);
+        var upgradeTitle = AddLabel(upgradePanelGo.transform, "UpgradeTitle", "LEXICON UPGRADE", fontSize: 42, bold: true);
         upgradeTitle.GetComponent<LayoutElement>().preferredWidth = 1800f;
-        var upgradePromptText = AddLabel(upgradePanelGo.transform, "PromptText", "Choose a Lexicon entry (free):", fontSize: 24);
+        var upgradePromptText = AddLabel(upgradePanelGo.transform, "PromptText", "Choose a Lexicon entry (free):", fontSize: 18);
         upgradePromptText.GetComponent<LayoutElement>().preferredWidth = 1800f;
 
         var upgradeOptionsArea = new GameObject("UpgradeOptionsArea", typeof(RectTransform));
@@ -663,8 +662,9 @@ public static class SceneBuilder
                                      transparent: false, color: new Color(0.18f, 0.14f, 0.16f));
         StretchFull(gameOverGo.GetComponent<RectTransform>());
         AddVLG(gameOverGo, 16, TextAnchor.MiddleCenter);
-        AddLabel(gameOverGo.transform, "GameOverTitle", "GAME OVER", fontSize: 72, bold: true);
-        var gameOverStats = AddLabel(gameOverGo.transform, "StatsText", "", fontSize: 22);
+        var gameOverTitle = AddLabel(gameOverGo.transform, "GameOverTitle", "GAME OVER", fontSize: 64, bold: true);
+        gameOverTitle.color = new Color(0.937f, 0.584f, 0.616f); // rose
+        var gameOverStats = AddLabel(gameOverGo.transform, "StatsText", "", fontSize: 18);
         gameOverStats.alignment = TextAnchor.MiddleCenter;
         var retryBtn = AddButton(gameOverGo.transform, "RetryButton", "TRY AGAIN",
                                  new Color(0.58f, 0.25f, 0.32f), width: 220, height: 60);
@@ -675,8 +675,9 @@ public static class SceneBuilder
                                     transparent: false, color: new Color(0.26f, 0.21f, 0.23f));
         StretchFull(victoryGo.GetComponent<RectTransform>());
         AddVLG(victoryGo, 16, TextAnchor.MiddleCenter);
-        AddLabel(victoryGo.transform, "VictoryTitle", "VICTORY!", fontSize: 72, bold: true);
-        var victoryStats = AddLabel(victoryGo.transform, "StatsText", "", fontSize: 22);
+        var victoryTitle = AddLabel(victoryGo.transform, "VictoryTitle", "VICTORY!", fontSize: 64, bold: true);
+        victoryTitle.color = new Color(0.722f, 0.847f, 0.729f); // sage green
+        var victoryStats = AddLabel(victoryGo.transform, "StatsText", "", fontSize: 18);
         victoryStats.color = new Color(0.722f, 0.847f, 0.729f); // sage green
         var playAgainBtn = AddButton(victoryGo.transform, "PlayAgainButton", "PLAY AGAIN",
                                      new Color(0.28f, 0.50f, 0.30f), width: 220, height: 60);
@@ -703,12 +704,12 @@ public static class SceneBuilder
         AddVLG(bossPreviewGo, 16, TextAnchor.MiddleCenter);
 
         var bpHeader = AddLabel(bossPreviewGo.transform, "BossHeader", "EXAM",
-                                fontSize: 48, bold: true);
+                                fontSize: 44, bold: true);
         bpHeader.color = _style != null ? _style.btnDanger : new Color(0.58f, 0.25f, 0.29f);
 
-        var bpModName = AddLabel(bossPreviewGo.transform, "ModifierName", "", fontSize: 32, bold: true);
+        var bpModName = AddLabel(bossPreviewGo.transform, "ModifierName", "", fontSize: 28, bold: true);
         bpModName.GetComponent<LayoutElement>().preferredWidth = 900f;
-        var bpModDesc = AddLabel(bossPreviewGo.transform, "ModifierDesc", "", fontSize: 20);
+        var bpModDesc = AddLabel(bossPreviewGo.transform, "ModifierDesc", "", fontSize: 16);
         bpModDesc.color = new Color(0.85f, 0.80f, 0.80f);
         bpModDesc.GetComponent<LayoutElement>().preferredWidth = 900f;
         var bpAnteBlind = AddLabel(bossPreviewGo.transform, "AnteBlindText", "", fontSize: 18);
@@ -819,7 +820,7 @@ public static class SceneBuilder
         ghostRt.anchorMin = new Vector2(0.5f, 0.5f);
         ghostRt.anchorMax = new Vector2(0.5f, 0.5f);
         ghostRt.pivot     = new Vector2(0.5f, 0.5f);
-        ghostRt.sizeDelta = new Vector2(80f, 110f);
+        ghostRt.sizeDelta = new Vector2(70f, 96f);
 
         var ghostImg          = ghostGo.AddComponent<Image>();
         ghostImg.color        = new Color(0.988f, 0.867f, 0.737f, 0.82f); // peach, semi-transparent
@@ -949,7 +950,7 @@ public static class SceneBuilder
     private static GameObject BuildTileCardPrefab()
     {
         var go = new GameObject("TileCard", typeof(RectTransform));
-        go.GetComponent<RectTransform>().sizeDelta = new Vector2(80f, 110f);
+        go.GetComponent<RectTransform>().sizeDelta = new Vector2(70f, 96f);
 
         var img = go.AddComponent<Image>();
         img.color = new Color(0.988f, 0.867f, 0.737f); // #FCDDBC soft peach
@@ -967,7 +968,7 @@ public static class SceneBuilder
 
         // ChipsText — small, bottom-right
         var chipsTxt = CreateText(go.transform, "ChipsText", "1",
-                                  fontSize: 18, bold: false, alignment: TextAnchor.LowerRight);
+                                  fontSize: 12, bold: false, alignment: TextAnchor.LowerRight);
         chipsTxt.color = new Color(0.412f, 0.345f, 0.373f); // dark mauve
         var ctRt = chipsTxt.GetComponent<RectTransform>();
         ctRt.anchorMin = new Vector2(0, 0);
@@ -982,7 +983,7 @@ public static class SceneBuilder
     private static GameObject BuildShopItemPrefab()
     {
         var go = new GameObject("ShopItem", typeof(RectTransform));
-        go.GetComponent<RectTransform>().sizeDelta = new Vector2(280f, 380f);
+        go.GetComponent<RectTransform>().sizeDelta = new Vector2(200f, 280f);
 
         var img = go.AddComponent<Image>();
         img.color = new Color(0.26f, 0.21f, 0.23f); // medium dark mauve
@@ -991,10 +992,10 @@ public static class SceneBuilder
 
         // LayoutElement — explicit sizes so the HLG never squishes this card
         var le = go.AddComponent<LayoutElement>();
-        le.minWidth        = 280f;
-        le.preferredWidth  = 280f;
-        le.minHeight       = 380f;
-        le.preferredHeight = 380f;
+        le.minWidth        = 200f;
+        le.preferredWidth  = 200f;
+        le.minHeight       = 280f;
+        le.preferredHeight = 280f;
 
         // Icon child
         var iconGo = new GameObject("ItemIcon", typeof(RectTransform));
@@ -1005,15 +1006,15 @@ public static class SceneBuilder
         iconRt.sizeDelta = new Vector2(100f, 0f);
         iconGo.AddComponent<Image>().color = new Color(0.412f, 0.345f, 0.373f); // dark mauve
 
-        var nameTxt = CreateText(go.transform, "ItemName", "Item",        fontSize: 28, bold: true,  alignment: TextAnchor.UpperCenter,
+        var nameTxt = CreateText(go.transform, "ItemName", "Item",        fontSize: 15, bold: true,  alignment: TextAnchor.UpperCenter,
                    anchorMin: new Vector2(0,0.4f),  anchorMax: new Vector2(1,0.6f));
         nameTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
 
-        var descTxt = CreateText(go.transform, "ItemDesc", "Description", fontSize: 22, bold: false, alignment: TextAnchor.UpperCenter,
+        var descTxt = CreateText(go.transform, "ItemDesc", "Description", fontSize: 12, bold: false, alignment: TextAnchor.UpperCenter,
                    anchorMin: new Vector2(0,0.18f), anchorMax: new Vector2(1,0.4f));
         descTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
 
-        var costTxt = CreateText(go.transform, "ItemCost", "$3",          fontSize: 26, bold: true,  alignment: TextAnchor.LowerCenter,
+        var costTxt = CreateText(go.transform, "ItemCost", "$3",          fontSize: 20, bold: true,  alignment: TextAnchor.LowerCenter,
                    anchorMin: new Vector2(0,0),     anchorMax: new Vector2(1,0.18f));
         costTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
 
@@ -1024,19 +1025,19 @@ public static class SceneBuilder
     private static GameObject BuildLexiconCardPrefab()
     {
         var go = new GameObject("LexiconCard", typeof(RectTransform));
-        go.GetComponent<RectTransform>().sizeDelta = new Vector2(200f, 80f);
+        go.GetComponent<RectTransform>().sizeDelta = new Vector2(148f, 60f);
 
         var img = go.AddComponent<Image>();
         img.color = new Color(0.412f, 0.345f, 0.373f); // #69585F dark mauve
 
-        // LayoutElement keeps card at 200×80 in both VLG (sidebar) and HLG (scoring row)
+        // LayoutElement keeps card at 148×60 in both VLG (sidebar) and HLG (scoring row)
         var le = go.AddComponent<LayoutElement>();
-        le.preferredWidth  = 200f;
-        le.preferredHeight = 80f;
+        le.preferredWidth  = 148f;
+        le.preferredHeight = 60f;
 
         // Name fills the full card; effect description shown via hover tooltip
         var nameTxt = CreateText(go.transform, "LexiconName", "Name",
-                                 fontSize: 18, bold: true, alignment: TextAnchor.MiddleCenter);
+                                 fontSize: 13, bold: true, alignment: TextAnchor.MiddleCenter);
         nameTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
 
         return SavePrefab(go, "LexiconCard");
@@ -1046,7 +1047,7 @@ public static class SceneBuilder
     private static GameObject BuildUpgradeOptionPrefab()
     {
         var go = new GameObject("UpgradeOption", typeof(RectTransform));
-        go.GetComponent<RectTransform>().sizeDelta = new Vector2(400f, 400f);
+        go.GetComponent<RectTransform>().sizeDelta = new Vector2(220f, 280f);
 
         var img = go.AddComponent<Image>();
         img.color = new Color(0.40f, 0.32f, 0.36f); // lighter mauve — distinct from panel background
@@ -1059,24 +1060,24 @@ public static class SceneBuilder
 
         // LayoutElement — explicit sizes so the HLG never squishes this card
         var le = go.AddComponent<LayoutElement>();
-        le.minWidth        = 400f;
-        le.preferredWidth  = 400f;
-        le.minHeight       = 400f;
-        le.preferredHeight = 400f;
+        le.minWidth        = 220f;
+        le.preferredWidth  = 220f;
+        le.minHeight       = 280f;
+        le.preferredHeight = 280f;
 
-        var nameTxt = CreateText(go.transform, "UpgradeName",   "Name",   fontSize: 30, bold: true,  alignment: TextAnchor.UpperCenter,
+        var nameTxt = CreateText(go.transform, "UpgradeName",   "Name",   fontSize: 17, bold: true,  alignment: TextAnchor.UpperCenter,
                    anchorMin: new Vector2(0, 0.72f), anchorMax: new Vector2(1, 1));
         nameTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
 
-        var effectTxt = CreateText(go.transform, "UpgradeEffect", "Effect", fontSize: 22, bold: false, alignment: TextAnchor.UpperCenter,
+        var effectTxt = CreateText(go.transform, "UpgradeEffect", "Effect", fontSize: 13, bold: false, alignment: TextAnchor.UpperCenter,
                    anchorMin: new Vector2(0, 0.44f), anchorMax: new Vector2(1, 0.72f));
         effectTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
 
-        var flavorTxt = CreateText(go.transform, "UpgradeFlavor", "Flavor", fontSize: 20, bold: false, alignment: TextAnchor.UpperCenter,
+        var flavorTxt = CreateText(go.transform, "UpgradeFlavor", "Flavor", fontSize: 13, bold: false, alignment: TextAnchor.UpperCenter,
                    anchorMin: new Vector2(0, 0.18f), anchorMax: new Vector2(1, 0.44f));
         flavorTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
 
-        var costTxt = CreateText(go.transform, "UpgradeCost",   "FREE",   fontSize: 26, bold: true,  alignment: TextAnchor.LowerCenter,
+        var costTxt = CreateText(go.transform, "UpgradeCost",   "FREE",   fontSize: 14, bold: true,  alignment: TextAnchor.LowerCenter,
                    anchorMin: new Vector2(0, 0),     anchorMax: new Vector2(1, 0.18f));
         costTxt.horizontalOverflow = HorizontalWrapMode.Wrap;
 
@@ -1316,7 +1317,7 @@ public static class SceneBuilder
         }
 
         var img = go.AddComponent<Image>();
-        img.color = new Color(0.22f, 0.18f, 0.20f, 0.95f); // dark mauve strip
+        img.color = new Color(0.102f, 0.075f, 0.094f, 1f); // #1a1318 near-black strip
 
         return go;
     }
@@ -1386,7 +1387,7 @@ public static class SceneBuilder
         var t = txtGo.AddComponent<Text>();
         t.text                 = label;
         t.font                 = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        t.fontSize             = 22;
+        t.fontSize             = 15;
         t.fontStyle            = FontStyle.Bold;
         t.color                = Color.white;
         t.alignment            = TextAnchor.MiddleCenter;
@@ -1395,7 +1396,7 @@ public static class SceneBuilder
         // Scale font down if label is too long for the button width
         t.resizeTextForBestFit = true;
         t.resizeTextMinSize    = 10;
-        t.resizeTextMaxSize    = 22;
+        t.resizeTextMaxSize    = 15;
 
         return go;
     }

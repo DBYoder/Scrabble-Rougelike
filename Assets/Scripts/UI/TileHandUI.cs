@@ -66,9 +66,11 @@ public class TileHandUI : MonoBehaviour
         {
             var card = Instantiate(tileCardPrefab, handParent);
 
-            // Set text fields by name
+            // Letter text is hidden when a sprite is available (baked into the tile image)
+            var letterSpr = TileSpriteLoader.GetLetterSprite(tile.Letter);
             foreach (var t in card.GetComponentsInChildren<Text>())
             {
+                if (t.name == "LetterText") t.gameObject.SetActive(letterSpr == null);
                 if (t.name == "LetterText") t.text = tile.Letter.ToString().ToUpper();
                 if (t.name == "ChipsText")  t.text = tile.TotalChips.ToString();
             }
@@ -76,7 +78,8 @@ public class TileHandUI : MonoBehaviour
             var img = card.GetComponent<Image>();
             if (img != null)
             {
-                img.color = normalColor;
+                if (letterSpr != null) { img.sprite = letterSpr; img.preserveAspect = false; img.color = Color.white; }
+                else img.color = normalColor;
 
                 // The Glossary: tint tiles that match the featured letter amber gold
                 bool hasGlossary = RunManager.Instance != null
@@ -86,7 +89,7 @@ public class TileHandUI : MonoBehaviour
                     && RunManager.Instance.featuredLetter != '\0'
                     && char.ToLower(tile.Letter) == RunManager.Instance.featuredLetter)
                 {
-                    img.color = new Color(1f, 0.85f, 0.30f); // amber gold
+                    img.color = new Color(1f, 0.85f, 0.30f); // amber gold tint
                 }
             }
 
@@ -110,7 +113,7 @@ public class TileHandUI : MonoBehaviour
         {
             var txt = redrawButton.GetComponentInChildren<Text>();
             if (txt != null)
-                txt.text = $"Redraw ({TileHandManager.Instance.redrawsRemaining})";
+                txt.text = $"RESHUFFLE ({TileHandManager.Instance.redrawsRemaining})";
         }
 
         // Update play-word button label and availability
@@ -119,7 +122,7 @@ public class TileHandUI : MonoBehaviour
             int playsLeft = TileHandManager.Instance.wordPlaysRemaining;
             var txt = submitButton.GetComponentInChildren<Text>();
             if (txt != null)
-                txt.text = $"PLAY WORD ({playsLeft})";
+                txt.text = "PLAY WORD";
             submitButton.interactable = playsLeft > 0;
         }
     }
@@ -129,15 +132,16 @@ public class TileHandUI : MonoBehaviour
     {
         if (!inRedrawMode) return;
 
+        var img = card.GetComponent<Image>();
         if (tilesForRedraw.Contains(tile))
         {
             tilesForRedraw.Remove(tile);
-            card.GetComponent<Image>().color = normalColor;
+            if (img != null) img.color = img.sprite != null ? Color.white : normalColor;
         }
         else
         {
             tilesForRedraw.Add(tile);
-            card.GetComponent<Image>().color = redrawColor;
+            if (img != null) img.color = redrawColor;
         }
     }
 
@@ -156,7 +160,11 @@ public class TileHandUI : MonoBehaviour
         inRedrawMode = true;
         tilesForRedraw.Clear();
         foreach (var c in tileCards)
-            if (c != null) c.GetComponent<Image>().color = normalColor;
+        {
+            if (c == null) continue;
+            var img = c.GetComponent<Image>();
+            if (img != null) img.color = img.sprite != null ? Color.white : normalColor;
+        }
         if (confirmRedrawButton != null) confirmRedrawButton.gameObject.SetActive(true);
     }
 
@@ -165,7 +173,11 @@ public class TileHandUI : MonoBehaviour
         inRedrawMode = false;
         tilesForRedraw.Clear();
         foreach (var c in tileCards)
-            if (c != null) c.GetComponent<Image>().color = normalColor;
+        {
+            if (c == null) continue;
+            var img = c.GetComponent<Image>();
+            if (img != null) img.color = img.sprite != null ? Color.white : normalColor;
+        }
         if (confirmRedrawButton != null) confirmRedrawButton.gameObject.SetActive(false);
     }
 
