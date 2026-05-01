@@ -347,19 +347,19 @@ public static class SceneBuilder
 
         // GridContainer — centered in the actual play area.
         // Reference resolution 1920×1080.
-        //   Vertical play area:  1080 - 50 (TopBar) - 193 (Hand+ActionBtns) = 837 px.
-        //   Play-area centre Y (from canvas bottom): 193 + 837/2 = 611.5 px.
-        //   Screen centre Y: 540 px  →  vertical offset = +72 px (shift up).
-        //   Horizontal play area between side panels: 270 (ScorePreview) … 1490 (LexSidebar) = 1220 px.
-        //   Play-area centre X: 880 px. Screen centre X: 960 px  →  horizontal offset = -80 px (shift left).
-        //   Cell layout: cellSize=56, cellSpacing=3  →  visual span = 13*56 + 12*3 = 764 px.
+        //   Vertical play area:  1080 - 42 (TopBar) - 173 (Hand 110 + Btns 55 + gap 8) = 865 px.
+        //   Play-area centre Y (from canvas bottom): 173 + 865/2 = 605.5 px.
+        //   Screen centre Y: 540 px  →  vertical offset = +66 px (shift up).
+        //   Horizontal play area between side panels: 210 (ScorePreview) … 1580 (LexSidebar) = 1370 px.
+        //   Play-area centre X: 895 px. Screen centre X: 960 px  →  horizontal offset = -65 px (shift left).
+        //   Cell layout: cellSize=56, cellSpacing=3  →  visual span = 9×56 + 8×3 = 528 px.
         var gridContainerGo = new GameObject("GridContainer", typeof(RectTransform));
         gridContainerGo.transform.SetParent(gamePanelGo.transform, false);
         var gcRt = gridContainerGo.GetComponent<RectTransform>();
         gcRt.anchorMin        = new Vector2(0.5f, 0.5f);
         gcRt.anchorMax        = new Vector2(0.5f, 0.5f);
         gcRt.pivot            = new Vector2(0.5f, 0.5f);
-        gcRt.anchoredPosition = new Vector2(-65f, 72f); // centred between side panels + in play area
+        gcRt.anchoredPosition = new Vector2(-65f, 66f); // centred between side panels + in play area
         gcRt.sizeDelta        = new Vector2(536f, 536f); // 9×56 + 8×3 = 528px + 4px breathing each side
 
         // HandArea — 110px strip above bottom, constrained to the play area (x=210..1580)

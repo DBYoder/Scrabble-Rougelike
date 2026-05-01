@@ -148,7 +148,7 @@ public class GridUI : MonoBehaviour
         bool locked = RunManager.Instance != null && !RunManager.Instance.IsCellUnlocked(x, y);
         if (locked)
         {
-            if (img != null) { img.sprite = null; img.color = new Color(0.10f, 0.08f, 0.10f); }
+            ApplyCellVisual(img, "locked", new Color(0.10f, 0.08f, 0.10f)); // no cell_locked.png → always uses fallback
             if (txt != null) txt.text  = "";
             if (btn != null) btn.interactable = false;
             return;
@@ -159,10 +159,13 @@ public class GridUI : MonoBehaviour
 
         if (cell.IsOccupied)
         {
-            bool isTurn = GridManager.Instance.IsTurnCell(x, y);
+            bool isTurn    = GridManager.Instance.IsTurnCell(x, y);
             bool isInvalid = _invalidTurnCells.Contains((x, y));
+            Color fallback = isTurn
+                ? (isInvalid ? invalidTurnTileColor : turnTileColor)
+                : occupiedColor;
             string spriteName = isTurn ? (isInvalid ? "invalid" : "valid") : "occupied";
-            SetCellSprite(img, spriteName);
+            ApplyCellVisual(img, spriteName, fallback);
             if (txt != null) txt.text = cell.placedTile.Letter.ToString().ToUpper();
         }
         else
@@ -170,34 +173,46 @@ public class GridUI : MonoBehaviour
             switch (cell.modifier)
             {
                 case CellModifier.TripleWord:
-                    SetCellSprite(img, "tw");
+                    ApplyCellVisual(img, "tw", twColor);
                     if (txt != null) txt.text = "TW";
                     break;
                 case CellModifier.DoubleWord:
-                    SetCellSprite(img, "dw");
+                    ApplyCellVisual(img, "dw", dwColor);
                     if (txt != null) txt.text = cell.isCenter ? "★" : "DW";
                     break;
                 case CellModifier.TripleLetter:
-                    SetCellSprite(img, "tl");
+                    ApplyCellVisual(img, "tl", tlColor);
                     if (txt != null) txt.text = "TL";
                     break;
                 case CellModifier.DoubleLetter:
-                    SetCellSprite(img, "dl");
+                    ApplyCellVisual(img, "dl", dlColor);
                     if (txt != null) txt.text = "DL";
                     break;
                 default:
-                    SetCellSprite(img, "empty");
+                    ApplyCellVisual(img, "empty", emptyColor);
                     if (txt != null) txt.text = "";
                     break;
             }
         }
     }
 
-    private static void SetCellSprite(Image img, string name)
+    // Sets the cell Image to the sprite if it loaded, otherwise falls back to the color.
+    // Always sets img.color so that hover / flash effects can safely override it afterward.
+    private static void ApplyCellVisual(Image img, string spriteName, Color fallback)
     {
         if (img == null) return;
-        var spr = TileSpriteLoader.GetCellSprite(name);
-        if (spr != null) { img.sprite = spr; img.color = Color.white; img.preserveAspect = false; }
+        var spr = TileSpriteLoader.GetCellSprite(spriteName);
+        if (spr != null)
+        {
+            img.sprite         = spr;
+            img.color          = Color.white;
+            img.preserveAspect = false;
+        }
+        else
+        {
+            img.sprite = null;
+            img.color  = fallback;
+        }
     }
 
     // ── Input ─────────────────────────────────────────────────────────────────
