@@ -43,8 +43,16 @@ public static class TileSpriteLoader
         return spr;
     }
 
+    // Clears all cached lookups — call after reimporting sprites so stale nulls are evicted.
+    public static void ClearCache()
+    {
+        _letters.Clear();
+        _states.Clear();
+        _cells.Clear();
+    }
+
     // ── Grid cell sprites ─────────────────────────────────────────────────────
-    // name: "empty" | "occupied" | "valid" | "invalid" | "tw" | "dw" | "tl" | "dl"
+    // name: "empty" | "tw" | "dw" | "tl" | "dl"  (occupied/valid/invalid use color fallback)
     public static Sprite GetCellSprite(string name)
     {
         if (!_cells.TryGetValue(name, out var spr))

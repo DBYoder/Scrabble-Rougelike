@@ -57,6 +57,7 @@ public class TileAssetPostprocessor : AssetPostprocessor
             }
         }
         AssetDatabase.Refresh();
+        TileSpriteLoader.ClearCache();
         Debug.Log($"[TileImport] Reimported {count} tile sprites. Resources.Load<Sprite>() will now work.");
     }
 }

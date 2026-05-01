@@ -159,13 +159,14 @@ public class GridUI : MonoBehaviour
 
         if (cell.IsOccupied)
         {
+            // Occupied cells use color only — cell sprites for occupied states have letters
+            // baked into the artwork which would conflict with the letter text overlay.
             bool isTurn    = GridManager.Instance.IsTurnCell(x, y);
             bool isInvalid = _invalidTurnCells.Contains((x, y));
-            Color fallback = isTurn
+            Color cellColor = isTurn
                 ? (isInvalid ? invalidTurnTileColor : turnTileColor)
                 : occupiedColor;
-            string spriteName = isTurn ? (isInvalid ? "invalid" : "valid") : "occupied";
-            ApplyCellVisual(img, spriteName, fallback);
+            if (img != null) { img.sprite = null; img.color = cellColor; }
             if (txt != null) txt.text = cell.placedTile.Letter.ToString().ToUpper();
         }
         else
@@ -173,21 +174,38 @@ public class GridUI : MonoBehaviour
             switch (cell.modifier)
             {
                 case CellModifier.TripleWord:
-                    ApplyCellVisual(img, "tw", twColor);
-                    if (txt != null) txt.text = "TW";
+                {
+                    bool s = ApplyCellVisual(img, "tw", twColor);
+                    if (txt != null) txt.text = s ? "" : "TW";
                     break;
+                }
                 case CellModifier.DoubleWord:
-                    ApplyCellVisual(img, "dw", dwColor);
-                    if (txt != null) txt.text = cell.isCenter ? "★" : "DW";
+                {
+                    if (cell.isCenter)
+                    {
+                        // Center star — dw sprite has "DW" baked, not "★", so always use color
+                        if (img != null) { img.sprite = null; img.color = dwColor; }
+                        if (txt != null) txt.text = "★";
+                    }
+                    else
+                    {
+                        bool s = ApplyCellVisual(img, "dw", dwColor);
+                        if (txt != null) txt.text = s ? "" : "DW";
+                    }
                     break;
+                }
                 case CellModifier.TripleLetter:
-                    ApplyCellVisual(img, "tl", tlColor);
-                    if (txt != null) txt.text = "TL";
+                {
+                    bool s = ApplyCellVisual(img, "tl", tlColor);
+                    if (txt != null) txt.text = s ? "" : "TL";
                     break;
+                }
                 case CellModifier.DoubleLetter:
-                    ApplyCellVisual(img, "dl", dlColor);
-                    if (txt != null) txt.text = "DL";
+                {
+                    bool s = ApplyCellVisual(img, "dl", dlColor);
+                    if (txt != null) txt.text = s ? "" : "DL";
                     break;
+                }
                 default:
                     ApplyCellVisual(img, "empty", emptyColor);
                     if (txt != null) txt.text = "";
@@ -197,21 +215,23 @@ public class GridUI : MonoBehaviour
     }
 
     // Sets the cell Image to the sprite if it loaded, otherwise falls back to the color.
-    // Always sets img.color so that hover / flash effects can safely override it afterward.
-    private static void ApplyCellVisual(Image img, string spriteName, Color fallback)
+    // Returns true if the sprite was loaded (caller can suppress text labels that are baked in).
+    private static bool ApplyCellVisual(Image img, string spriteName, Color fallback)
     {
-        if (img == null) return;
+        if (img == null) return false;
         var spr = TileSpriteLoader.GetCellSprite(spriteName);
         if (spr != null)
         {
             img.sprite         = spr;
             img.color          = Color.white;
             img.preserveAspect = false;
+            return true;
         }
         else
         {
             img.sprite = null;
             img.color  = fallback;
+            return false;
         }
     }
 
