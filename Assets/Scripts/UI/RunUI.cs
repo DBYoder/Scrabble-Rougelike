@@ -42,6 +42,9 @@ public class RunUI : MonoBehaviour
             : $"Chapter {rm.currentAnte} / {rm.MaxAntes}  ·  {stageName}";
         Set(anteText, anteStr);
 
+        // Swap TopBar sprite: exam variant has orange chapter text to signal the harder blind.
+        UISpritePatcher.Instance?.SetTopBarExam(rm.currentBlind == 2);
+
         if (featuredLetterText != null)
         {
             bool hasGlossary = rm.activeLexicon.Exists(l => l.effectType == LexiconEffectType.TheGlossary);

@@ -344,6 +344,9 @@ public class ScoreUI : MonoBehaviour
         // ── Step 4: Show PASSED / FAILED below the last word row ──────────────
         bool passed = RunManager.Instance.CheckBlindPassed();
 
+        // Show the sprite-based result banner (hides resultText when sprite is loaded).
+        UISpritePatcher.Instance?.ShowScoringResult(passed);
+
         if (_centreResultText != null)
         {
             var rt = _centreResultText.GetComponent<RectTransform>();

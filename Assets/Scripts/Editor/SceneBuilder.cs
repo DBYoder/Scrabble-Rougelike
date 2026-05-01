@@ -807,6 +807,66 @@ public static class SceneBuilder
         lexiconTooltip.panel    = tooltipPanelGo;
         lexiconTooltip.bodyText = ttTxt;
 
+        // ── UISpritePatcher ───────────────────────────────────────────────────
+        // Add a child Image to ScoreOverlay for the passed/retry result sprite.
+        var scoreResultImgGo = new GameObject("ResultImage", typeof(RectTransform));
+        scoreResultImgGo.transform.SetParent(overlayGo.transform, false);
+        var srRt = scoreResultImgGo.GetComponent<RectTransform>();
+        srRt.anchorMin = new Vector2(0f, 0f);
+        srRt.anchorMax = new Vector2(1f, 0f);
+        srRt.pivot     = new Vector2(0.5f, 0f);
+        srRt.anchoredPosition = new Vector2(0f, 4f);
+        srRt.sizeDelta = new Vector2(0f, 72f);
+        var scoreResultImg = scoreResultImgGo.AddComponent<Image>();
+        scoreResultImg.color = new Color(0f, 0f, 0f, 0f); // fully transparent until used
+        scoreResultImgGo.SetActive(false);
+
+        // Attach patcher to Canvas so it persists across panel transitions.
+        var patcher = canvasGo.AddComponent<UISpritePatcher>();
+
+        // Panel Images
+        patcher.topBarImage                  = topBar.GetComponent<Image>();
+        patcher.mainMenuPanelImage           = mainMenuGo.GetComponent<Image>();
+        patcher.shopPanelImage               = shopPanelGo.GetComponent<Image>();
+        patcher.upgradePanelImage            = upgradePanelGo.GetComponent<Image>();
+        patcher.gameOverPanelImage           = gameOverGo.GetComponent<Image>();
+        patcher.victoryPanelImage            = victoryGo.GetComponent<Image>();
+        patcher.bossPreviewPanelImage        = bossPreviewGo.GetComponent<Image>();
+        patcher.progressionRewardPanelImage  = progRewardGo.GetComponent<Image>();
+        patcher.scorePreviewImage            = previewGo.GetComponent<Image>();
+        patcher.scoreOverlayImage            = overlayGo.GetComponent<Image>();
+        patcher.lexSidebarImage              = lexSidebarGo.GetComponent<Image>();
+        patcher.scoringLexSidebarImage       = scoringLexSidebarGo.GetComponent<Image>();
+        patcher.tooltipPanelImage            = tooltipPanelGo.GetComponent<Image>();
+
+        // Title Texts suppressed when result sprites load
+        patcher.gameOverTitleText   = gameOverTitle;
+        patcher.victoryTitleText    = victoryTitle;
+        patcher.bossHeaderText      = bpHeader;
+        patcher.rewardHeaderText    = prHeader;
+        patcher.lexSidebarLabel     = lexLabel;
+        patcher.scoringLexSidebarLabel = scoringLexLabel;
+
+        // Action buttons
+        patcher.submitButton        = submitBtn.GetComponent<Button>();
+        patcher.endRoundButton      = endRoundBtn.GetComponent<Button>();
+        patcher.redrawButton        = redrawBtn.GetComponent<Button>();
+        patcher.confirmRedrawButton = confirmRedrawBtn.GetComponent<Button>();
+
+        // Navigation buttons
+        patcher.newGameButton   = newGameBtn.GetComponent<Button>();
+        patcher.continueButton  = continueBtn.GetComponent<Button>();
+        patcher.onwardButton    = onwardBtn.GetComponent<Button>();
+        patcher.faceItButton    = faceItBtn.GetComponent<Button>();
+        patcher.leaveShopButton = leaveShopBtn.GetComponent<Button>();
+        patcher.playAgainButton = playAgainBtn.GetComponent<Button>();
+        patcher.retryButton     = retryBtn.GetComponent<Button>();
+        patcher.skipButton      = skipBtn.GetComponent<Button>();
+
+        // Scoring result
+        patcher.scoreResultImage = scoreResultImg;
+        patcher.scoreResultText  = resultText;
+
         // ── Drag Layer (above tooltip layer — ghost tile follows cursor) ───────
         var dragLayerGo = new GameObject("DragLayer", typeof(RectTransform));
         dragLayerGo.transform.SetParent(canvasGo.transform, false);

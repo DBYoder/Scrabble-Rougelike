@@ -124,7 +124,9 @@ public class ShopUI : MonoBehaviour
         var sellGo = new GameObject("SellButton", typeof(RectTransform));
         sellGo.transform.SetParent(card.transform, false);
         var sellImg = sellGo.AddComponent<Image>();
-        sellImg.color = new Color(0.55f, 0.32f, 0.13f); // amber
+        var sellSpr = UIAssetLoader.GetButton("sell_2g_small");
+        if (sellSpr != null) { sellImg.sprite = sellSpr; sellImg.color = Color.white; sellImg.preserveAspect = false; }
+        else sellImg.color = new Color(0.55f, 0.32f, 0.13f); // amber fallback
         var sellBtn = sellGo.AddComponent<Button>();
         sellBtn.targetGraphic = sellImg;
         var sellLe  = sellGo.AddComponent<LayoutElement>();
