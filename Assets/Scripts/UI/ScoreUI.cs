@@ -394,22 +394,14 @@ public class ScoreUI : MonoBehaviour
                                  float tileW, float tileH, int lFont, int cFont)
     {
         GameObject go;
-        var letterSpr = TileSpriteLoader.GetLetterSprite(letter);
         if (wordTilePrefab != null)
         {
             go = Instantiate(wordTilePrefab, parent);
             var img = go.GetComponent<Image>();
-            if (img != null && letterSpr != null)
-            {
-                img.sprite = letterSpr;
-                img.color  = Color.white;
-                img.preserveAspect = false;
-            }
+            if (img != null) { img.sprite = null; img.color = new Color(0.988f, 0.867f, 0.737f); }
             foreach (var t in go.GetComponentsInChildren<Text>())
             {
-                // Hide the letter text — it is baked into the sprite
-                if (t.name == "L") t.gameObject.SetActive(letterSpr == null);
-                if (t.name == "L") t.text = letter.ToString().ToUpper();
+                if (t.name == "L") { t.gameObject.SetActive(true); t.text = letter.ToString().ToUpper(); }
                 if (t.name == "C") t.text = chips.ToString();
             }
         }
@@ -420,17 +412,15 @@ public class ScoreUI : MonoBehaviour
             go.transform.SetParent(parent, false);
 
             var img = go.AddComponent<Image>();
-            if (letterSpr != null) { img.sprite = letterSpr; img.color = Color.white; img.preserveAspect = false; }
-            else img.color = new Color(0.988f, 0.867f, 0.737f);
+            img.color = new Color(0.988f, 0.867f, 0.737f);
 
             var ol = go.AddComponent<Outline>();
             ol.effectColor    = new Color(0.55f, 0.40f, 0.20f, 0.5f);
             ol.effectDistance = new Vector2(1.5f, -1.5f);
 
-            if (letterSpr == null)
-                AddText(go.transform, "L", letter.ToString().ToUpper(),
-                        new Vector2(0f, 0.30f), Vector2.one, lFont, FontStyle.Bold,
-                        new Color(0.22f, 0.18f, 0.20f));
+            AddText(go.transform, "L", letter.ToString().ToUpper(),
+                    new Vector2(0f, 0.30f), Vector2.one, lFont, FontStyle.Bold,
+                    new Color(0.22f, 0.18f, 0.20f));
 
             AddText(go.transform, "C", chips.ToString(),
                     Vector2.zero, new Vector2(1f, 0.34f), cFont, FontStyle.Normal,

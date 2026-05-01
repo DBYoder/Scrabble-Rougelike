@@ -18,7 +18,7 @@ public class TileHandUI : MonoBehaviour
     public Button     endRoundButton;       // End the round and go to scoring
 
     [Header("Colors")]
-    public Color normalColor = Color.white;
+    public Color normalColor = new Color(0.988f, 0.867f, 0.737f); // peach
     public Color redrawColor = new Color(1f, 0.5f, 0.5f);
 
     // Runtime
@@ -66,20 +66,17 @@ public class TileHandUI : MonoBehaviour
         {
             var card = Instantiate(tileCardPrefab, handParent);
 
-            // Letter text is hidden when a sprite is available (baked into the tile image)
-            var letterSpr = TileSpriteLoader.GetLetterSprite(tile.Letter);
             foreach (var t in card.GetComponentsInChildren<Text>())
             {
-                if (t.name == "LetterText") t.gameObject.SetActive(letterSpr == null);
-                if (t.name == "LetterText") t.text = tile.Letter.ToString().ToUpper();
+                if (t.name == "LetterText") { t.gameObject.SetActive(true); t.text = tile.Letter.ToString().ToUpper(); }
                 if (t.name == "ChipsText")  t.text = tile.TotalChips.ToString();
             }
 
             var img = card.GetComponent<Image>();
             if (img != null)
             {
-                if (letterSpr != null) { img.sprite = letterSpr; img.preserveAspect = false; img.color = Color.white; }
-                else img.color = normalColor;
+                img.sprite = null;
+                img.color  = normalColor;
 
                 // The Glossary: tint tiles that match the featured letter amber gold
                 bool hasGlossary = RunManager.Instance != null
@@ -136,7 +133,7 @@ public class TileHandUI : MonoBehaviour
         if (tilesForRedraw.Contains(tile))
         {
             tilesForRedraw.Remove(tile);
-            if (img != null) img.color = img.sprite != null ? Color.white : normalColor;
+            if (img != null) img.color = normalColor;
         }
         else
         {
@@ -163,7 +160,7 @@ public class TileHandUI : MonoBehaviour
         {
             if (c == null) continue;
             var img = c.GetComponent<Image>();
-            if (img != null) img.color = img.sprite != null ? Color.white : normalColor;
+            if (img != null) img.color = normalColor;
         }
         if (confirmRedrawButton != null) confirmRedrawButton.gameObject.SetActive(true);
     }
@@ -176,7 +173,7 @@ public class TileHandUI : MonoBehaviour
         {
             if (c == null) continue;
             var img = c.GetComponent<Image>();
-            if (img != null) img.color = img.sprite != null ? Color.white : normalColor;
+            if (img != null) img.color = normalColor;
         }
         if (confirmRedrawButton != null) confirmRedrawButton.gameObject.SetActive(false);
     }
