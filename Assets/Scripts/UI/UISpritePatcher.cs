@@ -103,42 +103,19 @@ public class UISpritePatcher : MonoBehaviour
     // ── Apply all on start ────────────────────────────────────────────────────
     private void ApplyAll()
     {
-        // Panels — generic backgrounds (text always overlaid on top)
-        ApplyPanel(mainMenuPanelImage,           "medium");
-        ApplyPanel(shopPanelImage,               "medium");
-        ApplyPanel(upgradePanelImage,            "medium");
-        ApplyPanel(scorePreviewImage,            "overlay");
-        ApplyPanel(scoreOverlayImage,            "score");
-
-        // Result panels — title text suppressed when sprite loads
-        ApplyPanelSuppressText(gameOverPanelImage,           UIAssetLoader.GetResult("gameover"), gameOverTitleText);
-        ApplyPanelSuppressText(victoryPanelImage,            UIAssetLoader.GetResult("victory"),  victoryTitleText);
-        ApplyPanelSuppressText(bossPreviewPanelImage,        UIAssetLoader.GetBanner("boss_panel"), bossHeaderText);
-        ApplyPanelSuppressText(progressionRewardPanelImage,  UIAssetLoader.GetResult("chapter"),  rewardHeaderText);
-
-        // Sidebars — suppress "LEXICONS" label when sprite loads
-        bool sidebarSprLoaded = ApplyPanelSuppressText(lexSidebarImage,        UIAssetLoader.GetPanel("sidebar"), lexSidebarLabel);
-        ApplyPanelSuppressText(scoringLexSidebarImage, UIAssetLoader.GetPanel("sidebar"), scoringLexSidebarLabel);
-
-        // Tooltip
-        ApplyPanel(tooltipPanelImage, null, UIAssetLoader.GetLexicon("tooltip"));
-
-        // TopBar — start with normal; RunUI will call SetTopBarExam() on each RefreshHUD
-        ApplySprite(topBarImage, UIAssetLoader.GetHud("bar"));
-
-        // Buttons — static label baked into sprite → hide Text child
-        ApplyButton(submitButton,        "play_word_action",        hideText: true);
-        ApplyButton(endRoundButton,      "end_round_action",        hideText: true);
-        ApplyButton(redrawButton,        "reshuffle_3__action",     hideText: false); // count dynamic
+        // Buttons — purpose-built button sprites; hide text when label is baked in
+        ApplyButton(submitButton,        "play_word_action",         hideText: true);
+        ApplyButton(endRoundButton,      "end_round_action",         hideText: true);
         ApplyButton(confirmRedrawButton, "confirm_reshuffle_action", hideText: true);
-        ApplyButton(newGameButton,       "new_run_wide",            hideText: true);
-        ApplyButton(continueButton,      "continue_std",            hideText: true);
-        ApplyButton(onwardButton,        "onward_wide",             hideText: true);
-        ApplyButton(faceItButton,        "face_it_wide",            hideText: true);
-        ApplyButton(leaveShopButton,     "leave_shop_wide",         hideText: true);
-        ApplyButton(playAgainButton,     "play_again_wide",         hideText: true);
-        ApplyButton(retryButton,         "try_again_std",           hideText: true);
-        ApplyButton(skipButton,          "skip_std",                hideText: true);
+        ApplyButton(newGameButton,       "new_run_wide",             hideText: true);
+        ApplyButton(continueButton,      "continue_std",             hideText: true);
+        ApplyButton(onwardButton,        "onward_wide",              hideText: true);
+        ApplyButton(faceItButton,        "face_it_wide",             hideText: true);
+        ApplyButton(leaveShopButton,     "leave_shop_wide",          hideText: true);
+        ApplyButton(playAgainButton,     "play_again_wide",          hideText: true);
+        ApplyButton(retryButton,         "try_again_std",            hideText: true);
+        ApplyButton(skipButton,          "skip_std",                 hideText: true);
+        // redrawButton: sprite has label baked but count is dynamic — not applied as sprite
 
         // Scoring result image starts hidden; shown by ShowScoringResult()
         if (scoreResultImage != null) scoreResultImage.gameObject.SetActive(false);
