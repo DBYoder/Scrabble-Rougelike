@@ -9,17 +9,17 @@ public class UIStyleConfig : ScriptableObject
 {
     // ── Backgrounds ──────────────────────────────────────────────────────────
     [Header("Backgrounds")]
-    public Color panelBg      = new Color(0.18f, 0.14f, 0.16f);   // #2E2428 darkest mauve
-    public Color panelBgLight = new Color(0.26f, 0.21f, 0.23f);   // #423538
-    public Color panelBgMid   = new Color(0.41f, 0.35f, 0.37f);   // #69585F
+    public Color panelBg      = new Color(0.180f, 0.141f, 0.157f);  // #2E2428 darkest mauve
+    public Color panelBgLight = new Color(0.259f, 0.208f, 0.220f);  // #423538
+    public Color panelBgMid   = new Color(0.412f, 0.345f, 0.373f);  // #69585F
 
     // ── Buttons — face colour ─────────────────────────────────────────────
     [Header("Buttons")]
-    public Color btnConfirm     = new Color(0.28f, 0.50f, 0.30f);  // #476F4D green
-    public Color btnDanger      = new Color(0.58f, 0.25f, 0.29f);  // #94404A rose-red
-    public Color btnNeutral     = new Color(0.42f, 0.44f, 0.28f);  // #6B7047 olive
-    public Color btnSecondary   = new Color(0.41f, 0.35f, 0.37f);  // #69585F dark mauve
-    public Color btnBossPreview = new Color(0.55f, 0.32f, 0.13f);  // #8C5120 amber-brown
+    public Color btnConfirm     = new Color(0.278f, 0.435f, 0.302f);  // #476F4D muted forest green
+    public Color btnDanger      = new Color(0.580f, 0.251f, 0.290f);  // #94404A dusty rose-red
+    public Color btnNeutral     = new Color(0.420f, 0.439f, 0.278f);  // #6B7047 olive
+    public Color btnSecondary   = new Color(0.412f, 0.345f, 0.373f);  // #69585F dark mauve
+    public Color btnBossPreview = new Color(0.549f, 0.318f, 0.125f);  // #8C5120 amber-brown
 
     // ── Button dimensions ─────────────────────────────────────────────────
     [Header("Button Dimensions")]
@@ -46,11 +46,14 @@ public class UIStyleConfig : ScriptableObject
 
     // ── HUD ───────────────────────────────────────────────────────────────
     [Header("HUD")]
-    public Color hudGold        = new Color(1.000f, 0.880f, 0.251f);  // #FFE140 gold
-    public Color hudLives       = new Color(0.937f, 0.400f, 0.435f);  // #EF6670 rose-red
-    public Color hudScore       = new Color(0.930f, 0.918f, 0.886f);  // #EDEAD5 near-white
+    public Color hudGold        = new Color(1.000f, 0.882f, 0.251f);  // #FFE140 gold
+    public Color hudLives       = new Color(0.937f, 0.400f, 0.416f);  // #EF6670 rose-red
+    public Color hudScore       = new Color(0.929f, 0.918f, 0.835f);  // #EDEAD5 near-white warm
     public Color hudBossWarning = new Color(0.937f, 0.627f, 0.314f);  // same as cellTW orange
-    public Color lexiconLabel   = new Color(0.784f, 0.698f, 0.902f);  // #C8B2E6 lavender
+    public Color lexiconLabel   = new Color(0.784f, 0.698f, 0.902f);  // #C8B2E6 soft lavender
+    public Color textPrimary    = new Color(0.929f, 0.918f, 0.835f);  // #EDEAD5 near-white warm
+    public Color textSecondary  = new Color(0.722f, 0.663f, 0.686f);  // #B8A9AF muted mauve-grey
+    public Color textMuted      = new Color(0.478f, 0.408f, 0.439f);  // #7A6870 dark muted
 
     // ── Shop item backgrounds ─────────────────────────────────────────────
     [Header("Shop Items")]

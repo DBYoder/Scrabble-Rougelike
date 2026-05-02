@@ -14,6 +14,11 @@ public class RunUI : MonoBehaviour
     public Text anteText;           // "Chapter 2/8  ·  Test"
     public Text featuredLetterText; // Shows featured letter when The Glossary is active
 
+    [Header("Round Score Counter (Game Screen)")]
+    public Text  roundScoreText;   // current blind score (large monospace)
+    public Text  roundTargetText;  // "/ 200" target
+    public Image roundProgressFill; // fill Image — anchorMax.x driven by score/target
+
     [Header("Lexicon Display")]
     public Transform  lexiconBarParent;      // GamePanel sidebar (VLG, right side)
     public Transform  scoringLexiconParent;  // ScoringPanel row (HLG, above scroll)
@@ -50,6 +55,17 @@ public class RunUI : MonoBehaviour
                 featuredLetterText.text = $"★ {char.ToUpper(rm.featuredLetter)}";
         }
 
+        // Round score counter
+        int target = rm.GetCurrentBlindTarget();
+        Set(roundScoreText,  rm.score.ToString());
+        Set(roundTargetText, $"/ {target}");
+        if (roundProgressFill != null)
+        {
+            float pct = target > 0 ? Mathf.Clamp01((float)rm.score / target) : 0f;
+            var rt = roundProgressFill.GetComponent<RectTransform>();
+            rt.anchorMax = new Vector2(pct, 1f);
+            rt.offsetMax = Vector2.zero;
+        }
     }
 
     public void RefreshLexiconBar()
