@@ -84,7 +84,13 @@
       "Bash(xargs cat:*)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(cp \"C:\\\\Users\\\\Milo\\\\.claude\\\\projects\\\\C--Users-Milo-Cross-Word-Rougelike\\\\fe27ee9a-c67e-4483-a81e-b6e73a0dde35\\\\tool-results\\\\webfetch-1777658405554-f7azvf.bin\" /tmp/design.gz)",
+      "Bash(cd /tmp)",
+      "Bash(gunzip -f design.gz)",
+      "Bash(mkdir design_extracted)",
+      "Bash(tar -xf design -C design_extracted)"
     ]
   }
 }

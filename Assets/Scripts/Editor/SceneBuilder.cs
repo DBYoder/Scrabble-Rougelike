@@ -203,7 +203,7 @@ public static class SceneBuilder
         // Buttons in a horizontal row, centred below the text (4 buttons)
         var btnRowGo = new GameObject("ButtonRow", typeof(RectTransform));
         btnRowGo.transform.SetParent(landingGo.transform, false);
-        btnRowGo.GetComponent<RectTransform>().sizeDelta = new Vector2(640f, 70f);
+        btnRowGo.GetComponent<RectTransform>().sizeDelta = new Vector2(740f, 70f);
         var brHlg = btnRowGo.AddComponent<HorizontalLayoutGroup>();
         brHlg.spacing               = 16f;
         brHlg.childAlignment        = TextAnchor.MiddleCenter;
@@ -212,11 +212,11 @@ public static class SceneBuilder
         brHlg.childControlWidth      = false;
         brHlg.childControlHeight     = false;
         var brLe = btnRowGo.AddComponent<LayoutElement>();
-        brLe.preferredWidth  = 640f;
+        brLe.preferredWidth  = 740f;
         brLe.preferredHeight = 70f;
 
         var newGameBtn    = AddButton(btnRowGo.transform, "NewGameButton",    "NEW RUN",
-                                      new Color(0.28f, 0.50f, 0.30f), width: 140, height: 60);
+                                      new Color(0.28f, 0.50f, 0.30f), width: 220, height: 60);
         StyleButton(newGameBtn, ButtonType.Confirm);
 
         var scholarsBtn   = AddButton(btnRowGo.transform, "ScholarsButton",   "SCHOLARS",
@@ -428,13 +428,13 @@ public static class SceneBuilder
         abHlg.childForceExpandHeight= true;
         abHlg.padding               = new RectOffset(4, 4, 0, 0);
 
-        var submitBtn       = AddButton(actionBtns.transform, "SubmitButton",        "PLAY WORD",        new Color(0.28f, 0.50f, 0.30f), width: 175, height: 55);
+        var submitBtn       = AddButton(actionBtns.transform, "SubmitButton",        "PLAY WORD",        new Color(0.28f, 0.50f, 0.30f), width: 140, height: 55);
         StyleButton(submitBtn, ButtonType.Confirm);
-        var endRoundBtn     = AddButton(actionBtns.transform, "EndRoundButton",      "END ROUND",        new Color(0.58f, 0.25f, 0.32f), width: 175, height: 55);
+        var endRoundBtn     = AddButton(actionBtns.transform, "EndRoundButton",      "END ROUND",        new Color(0.58f, 0.25f, 0.32f), width: 140, height: 55);
         StyleButton(endRoundBtn, ButtonType.Danger);
         var redrawBtn       = AddButton(actionBtns.transform, "RedrawButton",        "RESHUFFLE (3)",   new Color(0.42f, 0.44f, 0.28f), width: 175, height: 55);
         StyleButton(redrawBtn, ButtonType.Neutral);
-        var confirmRedrawBtn= AddButton(actionBtns.transform, "ConfirmRedrawButton", "Confirm Reshuffle",new Color(0.420f, 0.439f, 0.278f), width: 195, height: 55); // #6B7047 neutral
+        var confirmRedrawBtn= AddButton(actionBtns.transform, "ConfirmRedrawButton", "Confirm Reshuffle",new Color(0.420f, 0.439f, 0.278f), width: 140, height: 55); // #6B7047 neutral
         StyleButton(confirmRedrawBtn, ButtonType.Neutral);
 
         // Wire GridUI — cell dimensions must match GridContainer sizing above
@@ -591,7 +591,7 @@ public static class SceneBuilder
 
         var resultText  = AddLabel(overlayGo.transform, "ResultText",  "", fontSize: 28, bold: true);
         var continueBtn = AddButton(overlayGo.transform, "ContinueButton", "CONTINUE",
-                                    new Color(0.28f, 0.50f, 0.30f), width: 200, height: 55);
+                                    new Color(0.28f, 0.50f, 0.30f), width: 160, height: 50);
         StyleButton(continueBtn, ButtonType.Confirm);
 
         // Wire ScoreUI
@@ -713,7 +713,7 @@ public static class SceneBuilder
         upgradeOptionsArea.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(20, 20, 10, 10);
 
         var skipBtn = AddButton(upgradePanelGo.transform, "SkipButton", "SKIP",
-                                new Color(0.412f, 0.345f, 0.373f), width: 180, height: 55);
+                                new Color(0.412f, 0.345f, 0.373f), width: 160, height: 50);
         StyleButton(skipBtn, ButtonType.Secondary);
 
         // Wire UpgradeUI
@@ -733,7 +733,7 @@ public static class SceneBuilder
         var gameOverStats = AddLabel(gameOverGo.transform, "StatsText", "", fontSize: 18);
         gameOverStats.alignment = TextAnchor.MiddleCenter;
         var retryBtn = AddButton(gameOverGo.transform, "RetryButton", "TRY AGAIN",
-                                 new Color(0.58f, 0.25f, 0.32f), width: 220, height: 60);
+                                 new Color(0.58f, 0.25f, 0.32f), width: 160, height: 50);
         StyleButton(retryBtn, ButtonType.Confirm);
 
         // ── VictoryPanel ──────────────────────────────────────────────────────
@@ -782,7 +782,7 @@ public static class SceneBuilder
         bpAnteBlind.color = _style != null ? _style.lexiconLabel : new Color(0.784f, 0.698f, 0.902f);
 
         var faceItBtn = AddButton(bossPreviewGo.transform, "FaceItButton", "FACE IT",
-                                  new Color(0.55f, 0.32f, 0.13f), width: 200, height: 60);
+                                  new Color(0.55f, 0.32f, 0.13f), width: 220, height: 60);
         StyleButton(faceItBtn, ButtonType.BossPreview);
 
         var bossPreviewUI = bossPreviewGo.AddComponent<BossPreviewUI>();
@@ -818,7 +818,7 @@ public static class SceneBuilder
 
         // Continue button
         var onwardBtn = AddButton(progRewardGo.transform, "OnwardButton", "ONWARD",
-                                  new Color(0.28f, 0.50f, 0.30f), width: 200, height: 60);
+                                  new Color(0.28f, 0.50f, 0.30f), width: 220, height: 60);
         StyleButton(onwardBtn, ButtonType.Confirm);
 
         var progRewardUI = progRewardGo.AddComponent<ProgressionRewardUI>();
